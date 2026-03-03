@@ -29,7 +29,7 @@ Future<void> installGitHooks() async {
         await Process.run('chmod', ['+x', hookFile.path]);
       }
     } catch (e) {
-      throw Exception('Failed to install Git hooks: \$e');
+      throw Exception('Failed to install Git hooks: $e');
     }
   });
 

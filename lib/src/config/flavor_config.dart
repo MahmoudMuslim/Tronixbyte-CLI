@@ -45,27 +45,7 @@ Future<void> _configureAndroidFlavors(
     return;
   }
 
-  final flavorConfig =
-      """
-    flavorDimensions "default"
-
-    productFlavors {
-        dev {
-            dimension "default"
-            resValue "string", "app_name", "$projectName (Dev)"
-            applicationIdSuffix ".dev"
-        }
-        stg {
-            dimension "default"
-            resValue "string", "app_name", "$projectName (Stg)"
-            applicationIdSuffix ".stg"
-        }
-        prod {
-            dimension "default"
-            resValue "string", "app_name", "$projectName"
-        }
-    }
-""";
+  final flavorConfig = getFlavorConfigTemplate(projectName);
 
   // Inject into android { ... } block
   final oldContent = content;
@@ -93,14 +73,7 @@ Future<void> _configureIosFlavors(String projectName, String activePath) async {
   for (final flavor in flavors) {
     for (final env in environments) {
       final file = File(p.join(iosFlutterDir.path, '$env-$flavor.xcconfig'));
-      file.writeAsStringSync("""
-#include "Generated.xcconfig"
-#include "AppFrameworkInfo.xcconfig"
-
-FLUTTER_TARGET=lib/main_$flavor.dart
-ASSET_PREFIX=$flavor
-APP_NAME=$projectName ${flavor.toUpperCase()}
-""");
+      file.writeAsStringSync(getFlavorConfigIOSTemplate(flavor, projectName));
     }
   }
 }
@@ -116,23 +89,6 @@ Future<void> _generateFlavorBaseCode(
   final flavors = ['dev', 'stg', 'prod'];
   for (final flavor in flavors) {
     final entryFile = File(p.join(libDir.path, 'main_$flavor.dart'));
-    entryFile.writeAsStringSync("""
-import 'package:$projectName/$projectName.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // Load flavor-specific .env
-  try {
-    await dotenv.load(fileName: '.env.$flavor');
-  } catch (_) {
-    // Fallback if file doesn't exist
-  }
-  
-  runApp(const App());
-}
-""");
+    entryFile.writeAsStringSync(getAppFlavorTemplate(projectName, flavor));
   }
 }

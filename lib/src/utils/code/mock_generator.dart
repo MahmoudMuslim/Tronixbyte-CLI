@@ -55,15 +55,14 @@ Future<void> generateMocks() async {
               .replaceAll('\\', '/');
           final packageImportPath = 'lib/$relativeToLib';
 
-          final mockContent =
-              """
-import 'package:mocktail/mocktail.dart';
-import 'package:$projectName/$packageImportPath';
+          final mockContent = getMockGeneratorTemplate(
+            projectName,
+            packageImportPath,
+            mockClassName,
+            className,
+          );
 
-class $mockClassName extends Mock implements $className {}
-""";
-
-          File(mockFilePath).writeAsStringSync(mockContent.trim() + '\n');
+          File(mockFilePath).writeAsStringSync('${mockContent.trim()}\n');
           mockExports.add("export '$mockFileName';");
           generatedCount++;
           printInfo('Generated Mock: $mockClassName');

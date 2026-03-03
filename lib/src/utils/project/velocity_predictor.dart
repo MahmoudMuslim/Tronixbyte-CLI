@@ -85,7 +85,7 @@ Future<void> runVelocityPredictor() async {
         .where((d) => d.isAfter(weekStart) && d.isBefore(weekEnd))
         .length;
     final bar = '█' * (weekCommits * 2).clamp(0, 40);
-    print('   Week -${i}: $bar ($weekCommits)');
+    print('   Week -$i: $bar ($weekCommits)');
   }
 
   printSuccess('Velocity analysis complete!');

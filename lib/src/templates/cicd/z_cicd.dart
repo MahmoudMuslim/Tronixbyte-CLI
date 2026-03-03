@@ -1,2 +1,2 @@
-export 'cicd_wizard_template.dart';
-export 'git_hooks_installer_template.dart';
+export 'cicd_template.dart';
+export 'git_template.dart';

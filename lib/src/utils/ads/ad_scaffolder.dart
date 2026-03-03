@@ -141,24 +141,21 @@ Future<void> _updateAndroidAdConfig(String appId, String activePath) async {
     '',
   );
 
-  final metaData = """
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="\$appId"/>""";
+  final metaData = getADMetaDataAndroidTemplate(appId);
 
   if (content.contains('</activity>')) {
-    content = content.replaceFirst('</activity>', '</activity>\n\$metaData');
+    content = content.replaceFirst('</activity>', '</activity>\n$metaData');
   } else {
     content = content.replaceFirst(
       '</application>',
-      '\$metaData\n</application>',
+      '$metaData\n</application>',
     );
   }
 
   const permission =
       '<uses-permission android:name="com.google.android.gms.permission.AD_ID"/>';
   if (!content.contains('android.permission.AD_ID')) {
-    content = content.replaceFirst('<manifest', '<manifest\n    \$permission');
+    content = content.replaceFirst('<manifest', '<manifest\n    $permission');
   }
 
   manifestFile.writeAsStringSync(content);
@@ -176,21 +173,12 @@ Future<void> _updateIosAdConfig(String appId, String activePath) async {
     '',
   );
 
-  final iosConfig = """
-	<key>GADApplicationIdentifier</key>
-	<string>\$appId</string>
-	<key>SKAdNetworkItems</key>
-	<array>
-		<dict>
-			<key>SKAdNetworkIdentifier</key>
-			<string>cstr6suwn9.skadnetwork</string>
-		</dict>
-	</array>""";
+  final iosConfig = getADIOSConfigTemplate(appId);
 
   if (content.contains('</dict>')) {
     final lastDictIndex = content.lastIndexOf('</dict>');
     content =
-        '\${content.substring(0, lastDictIndex)}\$iosConfig\n\${content.substring(lastDictIndex)}';
+        '${content.substring(0, lastDictIndex)}$iosConfig\n${content.substring(lastDictIndex)}';
   }
 
   infoPlist.writeAsStringSync(content);

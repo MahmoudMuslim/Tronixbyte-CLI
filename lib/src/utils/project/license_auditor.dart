@@ -9,7 +9,7 @@ Future<void> runLicenseAudit() async {
 
   if (!pubspecLock.existsSync()) {
     printError(
-      'pubspec.lock not found at \${pubspecLock.path}. Run "flutter pub get" first.',
+      'pubspec.lock not found at ${pubspecLock.path}. Run "flutter pub get" first.',
     );
     return;
   }
@@ -43,10 +43,7 @@ Future<void> runLicenseAudit() async {
 
   final buffer = StringBuffer();
   buffer.writeln('# 📜 Open Source Licenses');
-  buffer.writeln(
-    '\nGenerated on: \${DateTime.now().toString().split('
-    ')[0]}\n',
-  );
+  buffer.writeln('\nGenerated on: ${DateTime.now().toString().split('')[0]}\n');
   buffer.writeln(
     'This project uses $dependenciesFound third-party dependencies.\n',
   );

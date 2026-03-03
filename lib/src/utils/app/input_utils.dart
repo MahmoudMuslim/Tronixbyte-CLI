@@ -39,8 +39,9 @@ String _identifyCategory(String prompt) {
   final p = prompt.toLowerCase();
   if (p.contains('path') || p.contains('directory')) return 'path';
   if (p.contains('name')) return 'name';
-  if (p.contains('endpoint') || p.contains('url') || p.contains('href'))
+  if (p.contains('endpoint') || p.contains('url') || p.contains('href')) {
     return 'url';
+  }
   if (p.contains('package')) return 'package';
   if (p.contains('feature')) return 'feature';
   return 'general';
@@ -58,7 +59,7 @@ String? selectOption(
     print(' $cyan${i + 1}:$reset ${options[i]}');
   }
   if (showBack) {
-    print(' ${cyan}${options.length + 1}:$reset Back');
+    print(' $cyan${options.length + 1}:$reset Back');
   }
 
   final maxChoice = showBack ? options.length + 1 : options.length;

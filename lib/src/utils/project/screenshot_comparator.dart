@@ -121,7 +121,7 @@ Future<void> _generateHtmlReport(
 
       buffer.writeln('<div class="diff-row">');
       buffer.writeln(
-        '<div><h3>Baseline: $d</h3><img src="$relBaseline"></div>',
+        '<div><h3>Baseline: $d</h3><img src="$relBaseline" alt=""></div>',
       );
       buffer.writeln('<div><h3>Current: $d</h3><img src="$relCurrent"></div>');
       buffer.writeln('</div>');

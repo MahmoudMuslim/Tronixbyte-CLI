@@ -1,3 +1,5 @@
+export 'ad/z_ad.dart';
+export 'ai/z_ai.dart';
 export 'auth/z_auth.dart';
 export 'cicd/z_cicd.dart';
 export 'config/z_config.dart';
@@ -9,5 +11,8 @@ export 'injection/z_injection.dart';
 export 'manager/z_manager.dart';
 export 'network/z_network.dart';
 export 'notification/z_notification.dart';
+export 'project/z_project.dart';
+export 'server/z_server.dart';
+export 'service/z_service.dart';
 export 'test/z_test.dart';
 export 'ui/z_ui.dart';

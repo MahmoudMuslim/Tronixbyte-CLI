@@ -95,9 +95,9 @@ void _showComplexityDashboard(List<FeatureComplexity> complexities) {
   final List<List<String>> rows = complexities.map((c) {
     String status = '✅ Lean';
     if (c.score > 50) {
-      status = '\$red🚨 Bloated\$reset';
+      status = '$red🚨 Bloated$reset';
     } else if (c.score > 25) {
-      status = '\$yellow⚠️ Moderate\$reset';
+      status = '$yellow⚠️ Moderate$reset';
     }
 
     return [
@@ -109,32 +109,32 @@ void _showComplexityDashboard(List<FeatureComplexity> complexities) {
     ];
   }).toList();
 
-  print('\n\$blue\$bold🚀 FEATURE COMPLEXITY RANKING\$reset');
+  print('\n$blue$bold🚀 FEATURE COMPLEXITY RANKING$reset');
   printTable(['Feature', 'LOC', 'Widgets', 'Logic', 'Status'], rows);
 
   // Visual Distribution Chart (ASCII)
-  print('\n\$cyan\$bold📊 COMPLEXITY DISTRIBUTION\$reset');
+  print('\n$cyan$bold📊 COMPLEXITY DISTRIBUTION$reset');
   for (final c in complexities) {
     final barLength = (c.score).clamp(1, 40).toInt();
     final bar = '█' * barLength;
     final color = c.score > 50 ? red : (c.score > 25 ? yellow : green);
     print(
-      '   \${c.name.padRight(15)} \$color\$bar\$reset (\${c.score.toStringAsFixed(1)})',
+      '   ${c.name.padRight(15)} $color$bar$reset (${c.score.toStringAsFixed(1)})',
     );
   }
 
-  print('\n\$cyan\$bold💡 ARCHITECTURAL ADVICE\$reset');
+  print('\n$cyan$bold💡 ARCHITECTURAL ADVICE$reset');
   bool hadAdvice = false;
   for (final c in complexities) {
     if (c.score > 50) {
       print(
-        '   - Feature "\${c.name}" is too large (\${c.loc} LOC). Consider splitting into sub-features.',
+        '   - Feature "${c.name}" is too large (${c.loc} LOC). Consider splitting into sub-features.',
       );
       hadAdvice = true;
     }
     if (c.widgetCount > 15) {
       print(
-        '   - Feature "\${c.name}" has too many widgets (\$c.widgetCount). Extract shared components.',
+        '   - Feature "${c.name}" has too many widgets ($c.widgetCount). Extract shared components.',
       );
       hadAdvice = true;
     }

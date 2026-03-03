@@ -1,6 +1,7 @@
-String getBiometricAuthWizardTemplate() => """
+String getBiometricAuthWizardTemplate(String projectName) =>
+    """
 import 'package:local_auth/local_auth.dart';
-import 'package:\$projectName/\$projectName.dart';
+import 'package:$projectName/$projectName.dart';
 
 class BiometricAuthService {
   final LocalAuthentication _auth = LocalAuthentication();

@@ -51,13 +51,7 @@ Future<void> _updateAndroidManifest(String pubspec, String activePath) async {
     if (!content.contains(
       'com.google.firebase.messaging.default_notification_channel_id',
     )) {
-      const metadata = """
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="high_importance_channel" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@mipmap/ic_launcher" />""";
+      var metadata = getFirebaseNotificationAndroidMetaDataTemplate();
 
       if (content.contains('</activity>')) {
         content = content.replaceFirst('</activity>', '</activity>\n$metadata');
@@ -77,15 +71,7 @@ Future<void> _updateIosPlist(String pubspec, String activePath) async {
 
   if (pubspec.contains('firebase_messaging')) {
     if (!content.contains('FirebaseAppDelegateProxyEnabled')) {
-      const pushConfig = """
-	<key>FirebaseAppDelegateProxyEnabled</key>
-	<false/>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>remote-notification</string>
-	</array>
-""";
+      var pushConfig = getFirebaseNotificationIOSMetaDataTemplate();
       content = content.replaceFirst('</dict>', '$pushConfig</dict>');
     }
   }

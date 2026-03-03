@@ -49,8 +49,9 @@ Future<void> _configureGitHubActions(
 
   await loadingSpinner('Scaffolding CI/CD Workflows', () async {
     if (choices.contains(1)) await _generateQualityWorkflow(activePath);
-    if (choices.contains(2))
+    if (choices.contains(2)) {
       await _generateWebWorkflow(projectName, activePath);
+    }
     if (choices.contains(3)) await _generateShorebirdWorkflow(activePath);
     if (choices.contains(4)) await _generateFirebaseWorkflow(activePath);
     if (choices.contains(5)) await _generateFullReleaseWorkflow(activePath);

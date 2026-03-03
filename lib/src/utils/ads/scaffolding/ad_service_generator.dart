@@ -72,36 +72,12 @@ Future<void> generateAdService(
 
     // Interstitial Loader
     if (enabledTypes.contains('interstitial')) {
-      buffer.writeln("""
-  static void loadInterstitialAd({
-    required void Function(InterstitialAd ad) onAdLoaded,
-    void Function(LoadAdError error)? onAdFailedToLoad,
-  }) {
-    InterstitialAd.load(
-      adUnitId: interstitialAdUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: onAdLoaded,
-        onAdFailedToLoad: onAdFailedToLoad ?? (error) => debugPrint('InterstitialAd failed to load: \$error'),
-      ));
-  }""");
+      buffer.writeln(getLoadInterstitialAdTemplate());
     }
 
     // Rewarded Loader
     if (enabledTypes.contains('rewarded')) {
-      buffer.writeln("""
-  static void loadRewardedAd({
-    required void Function(RewardedAd ad) onAdLoaded,
-    void Function(LoadAdError error)? onAdFailedToLoad,
-  }) {
-    RewardedAd.load(
-      adUnitId: rewardedAdUnitId,
-      request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: onAdLoaded,
-        onAdFailedToLoad: onAdFailedToLoad ?? (error) => debugPrint('RewardedAd failed to load: \$error'),
-      ));
-  }""");
+      buffer.writeln(getLoadRewardedAdTemplate());
     }
 
     buffer.writeln("}");

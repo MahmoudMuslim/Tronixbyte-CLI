@@ -81,7 +81,7 @@ Future<void> _generateWidgetTests(
     }
 
     final content = getWidgetTestsTemplate(projectName, className);
-    testFile.writeAsStringSync(content.trim() + '\n', mode: FileMode.write);
+    testFile.writeAsStringSync('${content.trim()}\n', mode: FileMode.write);
     printInfo(
       'Scaffolded Widget Test: ${p.relative(testPath, from: activePath)}',
     );
@@ -97,7 +97,7 @@ Future<void> _scaffoldGoldenTests(String activePath) async {
 
   final readme = File(p.join(goldenDir.path, 'README.md'));
   readme.writeAsStringSync(
-    getScaffoldGoldenTestsTemplate().trim() + '\n',
+    '${getScaffoldGoldenTestsTemplate().trim()}\n',
     mode: FileMode.write,
   );
 
@@ -130,7 +130,7 @@ Future<void> _generateIntegrationTemplates(
     }
 
     final content = getGenerateIntegrationTemplate(name, projectName);
-    testFile.writeAsStringSync(content.trim() + '\n', mode: FileMode.write);
+    testFile.writeAsStringSync('${content.trim()}\n', mode: FileMode.write);
     printInfo(
       'Scaffolded Integration Template: ${p.relative(testPath, from: activePath)}',
     );

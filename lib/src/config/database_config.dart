@@ -83,7 +83,6 @@ Future<void> configureDatabase() async {
     final actualDbName = dbFileName ?? 'app_database.db';
 
     // Generate Database files
-    final projectName = await getProjectName();
     File(
       p.join(dbDir.path, 'app_database.dart'),
     ).writeAsStringSync(getDatabaseTemplate(driftAnnotation));

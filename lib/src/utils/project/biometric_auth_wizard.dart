@@ -29,7 +29,7 @@ Future<void> runBiometricAuthWizard() async {
       serviceFile.parent.createSync(recursive: true);
     }
 
-    final content = getBiometricAuthWizardTemplate();
+    final content = getBiometricAuthWizardTemplate(projectName);
 
     serviceFile.writeAsStringSync(content.trim(), mode: FileMode.write);
 

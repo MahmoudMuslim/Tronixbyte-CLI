@@ -27,38 +27,16 @@ Future<void> setupScreenshotAutomation() async {
       final testFile = File(
         p.join(activePath, 'integration_test', 'screenshot_test.dart'),
       );
-      testFile.writeAsStringSync("""
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:integration_test/integration_test.dart';
-import 'package:$projectName/main.dart' as app;
-
-void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-
-  testWidgets('Capture screenshots', (tester) async {
-    app.main();
-    await tester.pumpAndSettle();
-
-    // Capture home screen
-    await binding.takeScreenshot('1_home_screen');
-    
-    // Add more navigation and captures here...
-  });
-}
-""");
+      testFile.writeAsStringSync(getIntegrationTestTemplate(projectName));
 
       // 4. Create driver script
       final driverFile = File(
         p.join(activePath, 'test_driver', 'integration_test.dart'),
       );
-      if (!driverFile.parent.existsSync())
+      if (!driverFile.parent.existsSync()) {
         driverFile.parent.createSync(recursive: true);
-      driverFile.writeAsStringSync("""
-import 'package:integration_test/integration_test_driver.dart';
-
-Future<void> main() => integrationDriver();
-""");
+      }
+      driverFile.writeAsStringSync(getTestDriverTemplate());
     },
   );
 

@@ -43,7 +43,7 @@ Future<void> validateLocalization() async {
           }
         }
       } catch (e) {
-        printError('Error parsing localization files: \$e');
+        printError('Error parsing localization files: $e');
       }
     },
   );

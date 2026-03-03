@@ -115,3 +115,12 @@ jobs:
         env:
           GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
 """;
+
+String getMonoRepoMelosTemplate() {
+  return """
+name: my_monorepo
+packages:
+- packages/*
+- .
+""";
+}

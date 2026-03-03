@@ -60,7 +60,7 @@ Future<void> runSecurityAudit() async {
             final value = match.group(2)!;
             reportIssue(
               'WARNING',
-              'Potential hardcoded secret in ${p.relative(file.path, from: activePath)}:\${i + 1}',
+              'Potential hardcoded secret in ${p.relative(file.path, from: activePath)}:${i + 1}',
               data: {
                 'file': file,
                 'lineIndex': i,
@@ -136,7 +136,7 @@ Future<void> runSecurityAudit() async {
     if (hardcodedSecrets.isNotEmpty) {
       print('\n$cyan$bold🛠️  SECRET EXTRACTION AVAILABLE:$reset');
       final fix =
-          (ask('Extract \${hardcodedSecrets.length} secrets to .env? (y/n)') ??
+          (ask('Extract ${hardcodedSecrets.length} secrets to .env? (y/n)') ??
                   'n')
               .toLowerCase() ==
           'y';
@@ -151,7 +151,7 @@ Future<void> runSecurityAudit() async {
               '_',
             );
             final envKey =
-                '\${keyHint}_\${DateTime.now().millisecondsSinceEpoch % 1000}';
+                '${keyHint}_${DateTime.now().millisecondsSinceEpoch % 1000}';
 
             final envFiles = ['.env.dev', '.env.stg', '.env.prod', '.env'];
             for (final envName in envFiles) {
@@ -159,7 +159,7 @@ Future<void> runSecurityAudit() async {
               if (envFile.existsSync()) {
                 final c = envFile.readAsStringSync();
                 envFile.writeAsStringSync(
-                  '\$c\n\$envKey=\$value',
+                  '$c\n$envKey=$value',
                   mode: FileMode.write,
                 );
               }
@@ -167,12 +167,12 @@ Future<void> runSecurityAudit() async {
 
             final lines = file.readAsLinesSync();
             lines[lineIndex] = lines[lineIndex].replaceFirst(
-              '"\$value"',
-              "dotenv.env['\$envKey'] ?? ''",
+              '"$value"',
+              "dotenv.env['$envKey'] ?? ''",
             );
             lines[lineIndex] = lines[lineIndex].replaceFirst(
-              "'\$value'",
-              "dotenv.env['\$envKey'] ?? ''",
+              "'$value'",
+              "dotenv.env['$envKey'] ?? ''",
             );
             if (!lines.any((l) => l.contains('flutter_dotenv.dart'))) {
               lines.insert(
@@ -193,12 +193,12 @@ Future<void> runSecurityAudit() async {
     final reportFile = File(p.join(activePath, 'SECURITY_REPORT.md'));
     final buffer = StringBuffer();
     buffer.writeln('# 🛡️ Tronixbyte Security Audit Report');
-    buffer.writeln('\nGenerated on: \${DateTime.now()}\n');
+    buffer.writeln('\nGenerated on: ${DateTime.now()}\n');
     buffer.writeln('## 📊 Summary');
-    buffer.writeln('- Total Issues: \$issues');
+    buffer.writeln('- Total Issues: $issues');
     buffer.writeln('\n## 🔍 Detailed Findings');
     for (var f in findings) {
-      buffer.writeln('- \$f');
+      buffer.writeln('- $f');
     }
     reportFile.writeAsStringSync(buffer.toString(), mode: FileMode.write);
     printInfo(

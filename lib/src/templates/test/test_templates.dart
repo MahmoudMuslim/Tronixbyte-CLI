@@ -77,3 +77,34 @@ void main() {
   });
 }
 """;
+
+String getTestDriverTemplate() {
+  return """
+import 'package:integration_test/integration_test_driver.dart';
+
+Future<void> main() => integrationDriver();
+""";
+}
+
+String getIntegrationTestTemplate(String projectName) {
+  return """
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:$projectName/main.dart' as app;
+
+void main() {
+final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+testWidgets('Capture screenshots', (tester) async {
+  app.main();
+  await tester.pumpAndSettle();
+
+  // Capture home screen
+  await binding.takeScreenshot('1_home_screen');
+  
+  // Add more navigation and captures here...
+});
+}
+""";
+}

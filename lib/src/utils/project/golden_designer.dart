@@ -73,7 +73,7 @@ Future<void> runGoldenDesigner() async {
         screenNamePascal,
         screenName,
       );
-      testFile.writeAsStringSync(content.trim() + '\n', mode: FileMode.write);
+      testFile.writeAsStringSync('${content.trim()}\n', mode: FileMode.write);
     },
   );
 

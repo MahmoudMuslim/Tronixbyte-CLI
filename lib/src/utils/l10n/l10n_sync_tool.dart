@@ -46,7 +46,7 @@ Future<void> syncTranslations() async {
         );
 
         for (final file in files) {
-          if (file.path == masterFile!.path) continue;
+          if (file.path == masterFile.path) continue;
 
           final Map<String, dynamic> targetData = json.decode(
             file.readAsStringSync(),
@@ -56,7 +56,7 @@ Future<void> syncTranslations() async {
           // Add missing keys
           for (final key in masterData.keys) {
             if (!targetData.containsKey(key)) {
-              targetData[key] = "TODO: \${masterData[key]}";
+              targetData[key] = "TODO: ${masterData[key]}";
               updated = true;
             }
           }
@@ -64,11 +64,11 @@ Future<void> syncTranslations() async {
           if (updated) {
             const encoder = JsonEncoder.withIndent('  ');
             file.writeAsStringSync(encoder.convert(targetData));
-            printInfo('Updated \${p.basename(file.path)}');
+            printInfo('Updated ${p.basename(file.path)}');
           }
         }
       } catch (e) {
-        throw Exception('Error during sync: \$e');
+        throw Exception('Error during sync: $e');
       }
     },
   );

@@ -67,12 +67,10 @@ Future<void> runPenetrationTest() async {
     printSuccess('Target endpoint appears resilient to basic mock attacks.');
   } else {
     printWarning(
-      'Found \${vulnerabilities.length} potential security weaknesses:',
+      'Found ${vulnerabilities.length} potential security weaknesses:',
     );
     for (var v in vulnerabilities) {
-      print(
-        '   \$red\$bold[${v['severity']}]\$reset ${v['type']}: ${v['info']}',
-      );
+      print('   $red$bold[${v['severity']}]$reset ${v['type']}: ${v['info']}');
     }
   }
 

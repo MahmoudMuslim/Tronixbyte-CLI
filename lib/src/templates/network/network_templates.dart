@@ -145,3 +145,58 @@ class NetworkInfoImpl implements NetworkInfo {
   }
 }
 """;
+
+String getNetworkServiceTemplate() {
+  return """
+import 'package:connectivity_plus/connectivity_plus.dart';
+
+class NetworkService {
+static final Connectivity _connectivity = Connectivity();
+
+static Stream<bool> get onConnectivityChanged =>
+    _connectivity.onConnectivityChanged.map((results) => _hasConnection(results));
+
+static Future<bool> get hasConnection async {
+  final results = await _connectivity.checkConnectivity();
+  return _hasConnection(results);
+}
+
+static bool _hasConnection(List<ConnectivityResult> results) {
+  return results.isNotEmpty && !results.contains(ConnectivityResult.none);
+}
+}
+""";
+}
+
+String getSSLPinningWizardTemplate(
+  String projectName,
+  String actualFingerprint,
+  String domain,
+) {
+  return """
+import 'dart:io';
+import 'package:$projectName/$projectName.dart';
+
+class SslPinningInterceptor extends Interceptor {
+final List<String> allowedFingerprints = [
+  '$actualFingerprint',
+];
+
+@override
+void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+  // Note: Secure SSL Pinning usually requires platform-specific implementation
+  // or a specialized package like 'http_certificate_pinning'.
+  // This interceptor provides a foundation for custom validation logic.
+  
+  super.onRequest(options, handler);
+}
+}
+
+/// Helper to configure Dio with basic Certificate pinning
+void configureSslPinning(Dio dio) {
+// In a real implementation, you would use SecurityContext
+// or a Dio adapter to enforce certificate validation.
+debugPrint('🛡️ SSL Pinning active for domain: $domain');
+}
+""";
+}

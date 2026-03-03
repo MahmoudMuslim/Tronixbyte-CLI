@@ -4,7 +4,7 @@ Future<void> runMultiBuildHub() async {
   printSection('📦 Multi-Build Release Hub');
 
   final activePath = getActiveProjectPath();
-  printInfo('Target Project: \$activePath');
+  printInfo('Target Project: $activePath');
   printInfo('Select the build targets you want to generate:');
 
   final Map<String, bool> targets = {
@@ -15,8 +15,7 @@ Future<void> runMultiBuildHub() async {
   };
 
   for (final target in targets.keys) {
-    targets[target] =
-        (ask('Build \$target? (y/n)') ?? 'n').toLowerCase() == 'y';
+    targets[target] = (ask('Build $target? (y/n)') ?? 'n').toLowerCase() == 'y';
   }
 
   if (!targets.values.any((selected) => selected)) {
@@ -29,7 +28,7 @@ Future<void> runMultiBuildHub() async {
   int current = 0;
 
   await loadingSpinner(
-    'Executing multi-platform build suite in \$activePath',
+    'Executing multi-platform build suite in $activePath',
     () async {
       if (targets['APK (Android)']!) {
         current++;
@@ -44,7 +43,7 @@ Future<void> runMultiBuildHub() async {
         results.add([
           'APK',
           '✅ Success',
-          '\${DateTime.now().difference(start).inSeconds}s',
+          '${DateTime.now().difference(start).inSeconds}s',
         ]);
       }
 
@@ -60,7 +59,7 @@ Future<void> runMultiBuildHub() async {
         results.add([
           'AAB',
           '✅ Success',
-          '\${DateTime.now().difference(start).inSeconds}s',
+          '${DateTime.now().difference(start).inSeconds}s',
         ]);
       }
 
@@ -77,7 +76,7 @@ Future<void> runMultiBuildHub() async {
           results.add([
             'IPA',
             '✅ Success',
-            '\${DateTime.now().difference(start).inSeconds}s',
+            '${DateTime.now().difference(start).inSeconds}s',
           ]);
         } else {
           printWarning('IPA build skipped: Requires macOS.');
@@ -97,18 +96,18 @@ Future<void> runMultiBuildHub() async {
         results.add([
           'Web',
           '✅ Success',
-          '\${DateTime.now().difference(start).inSeconds}s',
+          '${DateTime.now().difference(start).inSeconds}s',
         ]);
       }
     },
   );
 
-  print('\n\$blue\$bold🏁 MULTI-BUILD RELEASE SUMMARY\$reset');
+  print('\n$blue$bold🏁 MULTI-BUILD RELEASE SUMMARY$reset');
   printTable(['Target', 'Status', 'Time'], results);
 
   printSuccess('Release hub operation complete!');
   printInfo(
-    '👉 Check the "build/" directory in \$activePath for your artifacts.',
+    '👉 Check the "build/" directory in $activePath for your artifacts.',
   );
 
   ask('Press Enter to return');

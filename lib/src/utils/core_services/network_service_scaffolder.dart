@@ -22,25 +22,7 @@ Future<void> scaffoldNetworkService() async {
         serviceFile.parent.createSync(recursive: true);
       }
 
-      serviceFile.writeAsStringSync("""
-import 'package:connectivity_plus/connectivity_plus.dart';
-
-class NetworkService {
-  static final Connectivity _connectivity = Connectivity();
-
-  static Stream<bool> get onConnectivityChanged =>
-      _connectivity.onConnectivityChanged.map((results) => _hasConnection(results));
-
-  static Future<bool> get hasConnection async {
-    final results = await _connectivity.checkConnectivity();
-    return _hasConnection(results);
-  }
-
-  static bool _hasConnection(List<ConnectivityResult> results) {
-    return results.isNotEmpty && !results.contains(ConnectivityResult.none);
-  }
-}
-""");
+      serviceFile.writeAsStringSync(getNetworkServiceTemplate());
 
       updateServiceBarrel('network_service.dart');
       await wireCoreInjection('NetworkService');

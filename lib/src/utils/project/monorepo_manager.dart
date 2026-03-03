@@ -90,12 +90,10 @@ Future<void> _initMelos(String activePath) async {
       await runCommand('dart', ['pub', 'add', 'dev:melos']);
       final melosFile = File(p.join(activePath, 'melos.yaml'));
       if (!melosFile.existsSync()) {
-        melosFile.writeAsStringSync("""
-name: my_monorepo
-packages:
-  - packages/*
-  - .
-""", mode: FileMode.write);
+        melosFile.writeAsStringSync(
+          getMonoRepoMelosTemplate(),
+          mode: FileMode.write,
+        );
       }
     },
   );

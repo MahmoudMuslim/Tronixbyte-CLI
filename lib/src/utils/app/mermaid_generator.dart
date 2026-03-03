@@ -116,12 +116,15 @@ Future<void> generateProjectDashboard() async {
       for (final name in featureNames) {
         final layers = [];
         final featPath = p.join(activePath, 'lib', 'features', name);
-        if (Directory(p.join(featPath, 'domain')).existsSync())
+        if (Directory(p.join(featPath, 'domain')).existsSync()) {
           layers.add('Domain');
-        if (Directory(p.join(featPath, 'data')).existsSync())
+        }
+        if (Directory(p.join(featPath, 'data')).existsSync()) {
           layers.add('Data');
-        if (Directory(p.join(featPath, 'presentation')).existsSync())
+        }
+        if (Directory(p.join(featPath, 'presentation')).existsSync()) {
           layers.add('UI');
+        }
 
         final depCount = dependencies
             .where((d) => d.startsWith('    $name '))

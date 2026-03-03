@@ -502,3 +502,17 @@ class AppDivider extends StatelessWidget {
   }
 }
 """;
+String getWidgetTemplate(String namePascal) {
+  return """
+import 'package:flutter/material.dart';
+
+class $namePascal extends StatelessWidget {
+const $namePascal({super.key});
+
+@override
+Widget build(BuildContext context) {
+  return const SizedBox();
+}
+}
+""";
+}

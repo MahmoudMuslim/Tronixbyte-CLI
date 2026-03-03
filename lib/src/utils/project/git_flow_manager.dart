@@ -124,26 +124,7 @@ Future<void> _generatePrTemplate() async {
   await loadingSpinner(
     'Generating PULL_REQUEST_TEMPLATE.md in $activePath',
     () async {
-      final template = """
-## Description
-<!-- Describe your changes in detail -->
-
-## Type of Change
-- [ ] Feature (New functionality)
-- [ ] Fix (Bug fix)
-- [ ] Refactor (Code improvement)
-- [ ] Docs (Documentation)
-- [ ] Chore (Maintenance)
-
-## Checklist
-- [ ] My code follows the style guidelines
-- [ ] I have performed a self-review
-- [ ] I have commented my code
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-""";
+      final template = getGitPrTemplate();
 
       final githubDir = Directory(p.join(activePath, '.github'));
       if (!githubDir.existsSync()) githubDir.createSync(recursive: true);

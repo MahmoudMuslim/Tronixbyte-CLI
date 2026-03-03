@@ -22,19 +22,7 @@ Future<void> generateSharedWidget() async {
   }
 
   await loadingSpinner('Generating $name widget and updating barrel', () async {
-    final template =
-        """
-import 'package:flutter/material.dart';
-
-class $namePascal extends StatelessWidget {
-  const $namePascal({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox();
-  }
-}
-""";
+    final template = getWidgetTemplate(namePascal);
 
     if (!widgetDir.existsSync()) {
       widgetDir.createSync(recursive: true);

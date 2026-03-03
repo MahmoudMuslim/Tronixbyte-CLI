@@ -76,12 +76,10 @@ Future<void> runDependencySecurityScan() async {
     );
   } else {
     printWarning(
-      'Found \${vulnerabilities.length} potential security advisories:',
+      'Found ${vulnerabilities.length} potential security advisories:',
     );
     for (var v in vulnerabilities) {
-      print(
-        '   \$red\$bold[${v['severity']}]\$reset ${v['pkg']}: ${v['info']}',
-      );
+      print('   $red$bold[${v['severity']}]$reset ${v['pkg']}: ${v['info']}');
     }
   }
 }

@@ -281,3 +281,23 @@ class AppTheme {
         colorSchemeSeed: Colors.blue);
 }
 """;
+String getAppFlavorTemplate(String projectName, String flavor) {
+  return """
+import 'package:$projectName/$projectName.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+void main() async {
+WidgetsFlutterBinding.ensureInitialized();
+
+// Load flavor-specific .env
+try {
+  await dotenv.load(fileName: '.env.$flavor');
+} catch (_) {
+  // Fallback if file doesn't exist
+}
+
+runApp(const App());
+}
+""";
+}
