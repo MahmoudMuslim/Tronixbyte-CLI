@@ -1,7 +1,10 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> configureProjectFlavors(String projectName) async {
   printSection('Multi-Flavor Configuration Wizard');
+
+  final activePath = getActiveProjectPath();
 
   printInfo('This tool will configure "dev", "stg", and "prod" flavors.');
   printInfo(
@@ -14,19 +17,22 @@ Future<void> configureProjectFlavors(String projectName) async {
   if (!confirm) return;
 
   await loadingSpinner('Configuring Multi-Platform Flavors', () async {
-    await _configureAndroidFlavors(projectName);
-    await _configureIosFlavors(projectName);
-    await _generateFlavorBaseCode(projectName);
+    await _configureAndroidFlavors(projectName, activePath);
+    await _configureIosFlavors(projectName, activePath);
+    await _generateFlavorBaseCode(projectName, activePath);
   });
 
   printSuccess('Flavor configuration complete!');
   printInfo('👉 Run "flutter pub get" and check your build configurations.');
 }
 
-Future<void> _configureAndroidFlavors(String projectName) async {
-  final gradleFile = File('android/app/build.gradle');
+Future<void> _configureAndroidFlavors(
+  String projectName,
+  String activePath,
+) async {
+  final gradleFile = File(p.join(activePath, 'android', 'app', 'build.gradle'));
   if (!gradleFile.existsSync()) {
-    printError('Android build.gradle not found.');
+    printError('Android build.gradle not found at ${gradleFile.path}');
     return;
   }
 
@@ -77,18 +83,16 @@ Future<void> _configureAndroidFlavors(String projectName) async {
   gradleFile.writeAsStringSync(content, mode: FileMode.write);
 }
 
-Future<void> _configureIosFlavors(String projectName) async {
-  // iOS flavoring usually requires Xcode project manipulation (pbxproj)
-  // For a CLI tool, we can scaffold the necessary config files (.xcconfig)
-  final iosDir = Directory('ios/Flutter');
-  if (!iosDir.existsSync()) return;
+Future<void> _configureIosFlavors(String projectName, String activePath) async {
+  final iosFlutterDir = Directory(p.join(activePath, 'ios', 'Flutter'));
+  if (!iosFlutterDir.existsSync()) return;
 
   final environments = ['Debug', 'Release', 'Profile'];
   final flavors = ['dev', 'stg', 'prod'];
 
   for (final flavor in flavors) {
     for (final env in environments) {
-      final file = File('ios/Flutter/$env-$flavor.xcconfig');
+      final file = File(p.join(iosFlutterDir.path, '$env-$flavor.xcconfig'));
       file.writeAsStringSync("""
 #include "Generated.xcconfig"
 #include "AppFrameworkInfo.xcconfig"
@@ -101,22 +105,31 @@ APP_NAME=$projectName ${flavor.toUpperCase()}
   }
 }
 
-Future<void> _generateFlavorBaseCode(String projectName) async {
-  final libDir = Directory('lib');
+Future<void> _generateFlavorBaseCode(
+  String projectName,
+  String activePath,
+) async {
+  final libDir = Directory(p.join(activePath, 'lib'));
   if (!libDir.existsSync()) return;
 
   // Generate entry points for each flavor
   final flavors = ['dev', 'stg', 'prod'];
   for (final flavor in flavors) {
-    final entryFile = File('lib/main_$flavor.dart');
+    final entryFile = File(p.join(libDir.path, 'main_$flavor.dart'));
     entryFile.writeAsStringSync("""
 import 'package:$projectName/$projectName.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Load flavor-specific .env
-  await dotenv.load(fileName: '.env.$flavor');
+  try {
+    await dotenv.load(fileName: '.env.$flavor');
+  } catch (_) {
+    // Fallback if file doesn't exist
+  }
   
   runApp(const App());
 }

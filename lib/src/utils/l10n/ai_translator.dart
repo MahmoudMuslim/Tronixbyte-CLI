@@ -1,13 +1,14 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runAiTranslator() async {
   printSection('🌍 Localization AI Translator (Gemini)');
 
-  final enFile = File('assets/translations/en.json');
+  final activePath = getActiveProjectPath();
+  final enFile = File(p.join(activePath, 'assets', 'translations', 'en.json'));
+
   if (!enFile.existsSync()) {
-    printError(
-      'Source translation file not found: assets/translations/en.json',
-    );
+    printError('Source translation file not found at ${enFile.path}.');
     return;
   }
 
@@ -19,10 +20,11 @@ Future<void> runAiTranslator() async {
 
   final targetLang =
       ask('Enter target language code (e.g., ar, es, fr, de)') ?? 'ar';
-  final targetPath = 'assets/translations/$targetLang.json';
+  final targetRelPath = p.join('assets', 'translations', '$targetLang.json');
+  final targetPath = p.join(activePath, targetRelPath);
 
   await loadingSpinner(
-    'Translating strings to ${targetLang.toUpperCase()}',
+    'Translating strings to ${targetLang.toUpperCase()} in $activePath',
     () async {
       try {
         final model = GenerativeModel(
@@ -66,6 +68,8 @@ Future<void> runAiTranslator() async {
     },
   );
 
-  printSuccess('Successfully generated: $targetPath');
-  printInfo('👉 Review the translations before production use.');
+  printSuccess('Successfully generated: $targetRelPath');
+  printInfo(
+    '👉 Review the translations in the active project before production use.',
+  );
 }

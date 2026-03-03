@@ -1,10 +1,12 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> generateSharedUiBoilerplate() async {
   printSection('Shared UI Boilerplate Generator');
 
+  final activePath = getActiveProjectPath();
   final projectName = await getProjectName();
-  final widgetDir = Directory('lib/shared/widgets');
+  final widgetDir = Directory(p.join(activePath, 'lib', 'shared', 'widgets'));
   if (!widgetDir.existsSync()) widgetDir.createSync(recursive: true);
 
   final widgets = {
@@ -20,32 +22,37 @@ Future<void> generateSharedUiBoilerplate() async {
     'error_view.dart': getErrorViewTemplate(projectName),
   };
 
-  await loadingSpinner('Generating elite shared widgets', () async {
-    widgets.forEach((name, content) {
-      final file = File('lib/shared/widgets/$name');
-      file.writeAsStringSync(content);
-      printInfo('Generated: lib/shared/widgets/$name');
-    });
+  await loadingSpinner(
+    'Generating elite shared widgets in $activePath',
+    () async {
+      widgets.forEach((name, content) {
+        final file = File(p.join(widgetDir.path, name));
+        file.writeAsStringSync(content);
+        printInfo('Generated: lib/shared/widgets/$name');
+      });
 
-    // Update Barrel
-    final barrelFile = File('lib/shared/widgets/z_widgets.dart');
-    if (!barrelFile.existsSync()) {
-      barrelFile.writeAsStringSync('');
-    }
+      // Update Barrel
+      final barrelFile = File(p.join(widgetDir.path, 'z_widgets.dart'));
+      if (!barrelFile.existsSync()) {
+        barrelFile.writeAsStringSync('');
+      }
 
-    final content = barrelFile.readAsStringSync();
-    final newExports = widgets.keys
-        .where((k) => !content.contains(k))
-        .map((k) => "export '$k';")
-        .join('\n');
+      final content = barrelFile.readAsStringSync();
+      final newExports = widgets.keys
+          .where((k) => !content.contains(k))
+          .map((k) => "export '$k';")
+          .join('\n');
 
-    if (newExports.isNotEmpty) {
-      final updatedContent = content.isEmpty
-          ? newExports
-          : '$content\n$newExports';
-      barrelFile.writeAsStringSync('$updatedContent\n');
-    }
-  });
+      if (newExports.isNotEmpty) {
+        final updatedContent = content.isEmpty
+            ? newExports
+            : (content.endsWith('\n')
+                  ? '$content$newExports'
+                  : '$content\n$newExports');
+        barrelFile.writeAsStringSync('$updatedContent\n');
+      }
+    },
+  );
 
   printSuccess(
     'Shared UI Boilerplate ready! Use them via "AppButton", "AppTextField", "AppCard", etc.',

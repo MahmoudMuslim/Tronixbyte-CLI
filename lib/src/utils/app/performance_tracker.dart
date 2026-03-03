@@ -1,10 +1,16 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 class PerformanceTracker {
-  static const String _logFile = '.tronix_perf_log.json';
+  static String get _logPath {
+    final home = Platform.isWindows
+        ? Platform.environment['USERPROFILE']
+        : Platform.environment['HOME'];
+    return p.join(home ?? '.', '.tronix_perf_log.json');
+  }
 
   static Future<void> logCommand(String command, double seconds) async {
-    final file = File(_logFile);
+    final file = File(_logPath);
     List<dynamic> logs = [];
 
     if (file.existsSync()) {
@@ -28,7 +34,7 @@ class PerformanceTracker {
   }
 
   static List<Map<String, dynamic>> getLogs() {
-    final file = File(_logFile);
+    final file = File(_logPath);
     if (!file.existsSync()) return [];
     try {
       return List<Map<String, dynamic>>.from(

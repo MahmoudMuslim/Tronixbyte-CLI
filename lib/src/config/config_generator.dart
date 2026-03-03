@@ -1,9 +1,12 @@
 import 'package:tools/tools.dart';
 
 Future<void> runConfigGeneratorMenu() async {
-  final projectName = await getProjectName();
+  // Ensure we are in a valid project before starting
+  await ensureProjectRoot();
 
   while (true) {
+    final projectName = await getProjectName();
+
     final options = [
       'UI & Extensions (Context, Responsive)',
       'API (Legacy)',

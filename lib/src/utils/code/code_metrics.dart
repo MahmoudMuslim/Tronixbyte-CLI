@@ -1,11 +1,14 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runCodeMetrics() async {
   printSection('Code Metrics Analysis');
 
-  final libDir = Directory('lib');
+  final activePath = getActiveProjectPath();
+  final libDir = Directory(p.join(activePath, 'lib'));
+
   if (!libDir.existsSync()) {
-    printError('lib directory not found.');
+    printError('lib directory not found at ${libDir.path}.');
     return;
   }
 
@@ -16,7 +19,7 @@ Future<void> runCodeMetrics() async {
   int businessLogicLines = 0;
   int uiLines = 0;
 
-  await loadingSpinner('Analyzing codebase metrics', () async {
+  await loadingSpinner('Analyzing codebase metrics in $activePath', () async {
     final entities = libDir.listSync(recursive: true);
     for (final entity in entities) {
       if (entity is File && entity.path.endsWith('.dart')) {
@@ -35,14 +38,15 @@ Future<void> runCodeMetrics() async {
           }
         }
 
-        if (entity.path.contains('bloc') ||
-            entity.path.contains('cubit') ||
-            entity.path.contains('provider') ||
-            entity.path.contains('controller')) {
+        final path = entity.path.toLowerCase();
+        if (path.contains('bloc') ||
+            path.contains('cubit') ||
+            path.contains('provider') ||
+            path.contains('controller')) {
           businessLogicLines += lines.length;
-        } else if (entity.path.contains('presentation') ||
-            entity.path.contains('widgets') ||
-            entity.path.contains('screens')) {
+        } else if (path.contains('presentation') ||
+            path.contains('widgets') ||
+            path.contains('screens')) {
           uiLines += lines.length;
         }
       }
@@ -57,7 +61,9 @@ Future<void> runCodeMetrics() async {
       ['Total Lines of Code (LOC)', totalLines.toString()],
       [
         'Comment Lines',
-        '$commentLines (${(commentLines / totalLines * 100).toStringAsFixed(1)}%)',
+        totalLines > 0
+            ? '$commentLines (${(commentLines / totalLines * 100).toStringAsFixed(1)}%)'
+            : '0',
       ],
       ['Blank Lines', blankLines.toString()],
     ],

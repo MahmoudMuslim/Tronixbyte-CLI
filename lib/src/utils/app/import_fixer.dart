@@ -4,11 +4,12 @@ import 'package:tools/tools.dart';
 Future<void> fixRelativeImports() async {
   printSection('Package Import Fixer');
 
+  final activePath = getActiveProjectPath();
   final projectName = await getProjectName();
-  final libDir = Directory('lib');
+  final libDir = Directory(p.join(activePath, 'lib'));
 
   if (!libDir.existsSync()) {
-    printError('lib directory not found.');
+    printError('lib directory not found at ${libDir.path}');
     return;
   }
 
@@ -21,8 +22,10 @@ Future<void> fixRelativeImports() async {
       .where((f) => f.path.endsWith('.dart'));
 
   await loadingSpinner(
-    'Refactoring relative imports to package imports',
+    'Refactoring relative imports to package imports in $activePath',
     () async {
+      final libPathWithSep = p.join(activePath, 'lib') + p.separator;
+
       for (final file in files) {
         final lines = file.readAsLinesSync();
         bool fileChanged = false;
@@ -39,11 +42,11 @@ Future<void> fixRelativeImports() async {
               final fileDir = p.dirname(file.path);
               final absoluteTarget = p.normalize(p.join(fileDir, relativePath));
 
-              if (absoluteTarget.contains('lib${p.separator}')) {
+              if (absoluteTarget.startsWith(libPathWithSep)) {
                 final packagePath = absoluteTarget
-                    .split('lib${p.separator}')
-                    .last
+                    .substring(libPathWithSep.length)
                     .replaceAll(p.separator, '/');
+
                 final newLine = line.replaceFirst(
                   relativePath,
                   'package:$projectName/$packagePath',
@@ -69,6 +72,6 @@ Future<void> fixRelativeImports() async {
   if (fixedFiles > 0) {
     printSuccess('Fixed $totalFixes relative imports in $fixedFiles files.');
   } else {
-    printInfo('No relative imports found. All clean!');
+    printInfo('No relative imports found in the active project. All clean!');
   }
 }

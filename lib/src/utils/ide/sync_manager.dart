@@ -2,9 +2,11 @@ import 'package:tools/tools.dart';
 
 Future<void> syncProject() async {
   printSection('Full Project Synchronization');
+  final activePath = getActiveProjectPath();
   final totalSteps = 5;
 
-  printStep(1, totalSteps, 'Running flutter pub get');
+  printStep(1, totalSteps, 'Running flutter pub get in $activePath');
+  // runCommand uses getActiveProjectPath() internally
   await runCommand('flutter', [
     'pub',
     'get',

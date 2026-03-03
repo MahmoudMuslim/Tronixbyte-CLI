@@ -1,8 +1,10 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> scaffoldAdIntegration() async {
   printSection('Ad Services Hub');
 
+  final activePath = getActiveProjectPath();
   final adTypes = {
     'app_open': 'App Open Ads',
     'adaptive_banner': 'Adaptive Banner Ads',
@@ -48,6 +50,7 @@ Future<void> scaffoldAdIntegration() async {
   final projectName = await getProjectName();
 
   // 1. Dependency
+  // runCommand uses getActiveProjectPath() internally
   await runCommand('flutter', [
     'pub',
     'add',
@@ -56,12 +59,13 @@ Future<void> scaffoldAdIntegration() async {
 
   // 2. Scaffolding
   await loadingSpinner('Generating Ad services & widgets', () async {
+    // Note: Assuming generateAdService/Widgets use active project path or we update them if needed.
     await generateAdService(projectName, enabledTypes, unitIds);
     await generateAdWidgets(projectName, enabledTypes);
   });
 
   // 3. Injection
-  final injectionFile = File('lib/injection.dart');
+  final injectionFile = File(p.join(activePath, 'lib', 'injection.dart'));
   if (injectionFile.existsSync()) {
     printInfo('Wiring AdService into lib/injection.dart...');
     String content = injectionFile.readAsStringSync();
@@ -75,7 +79,7 @@ Future<void> scaffoldAdIntegration() async {
   }
 
   // 4. Initialization
-  final mainFile = File('lib/main.dart');
+  final mainFile = File(p.join(activePath, 'lib', 'main.dart'));
   if (mainFile.existsSync()) {
     String content = mainFile.readAsStringSync();
     if (!content.contains('AdService.init()')) {
@@ -89,8 +93,8 @@ Future<void> scaffoldAdIntegration() async {
   }
 
   // 5. Platform Config
-  await _updateAndroidAdConfig(androidAppId);
-  await _updateIosAdConfig(iosAppId);
+  await _updateAndroidAdConfig(androidAppId, activePath);
+  await _updateIosAdConfig(iosAppId, activePath);
 
   printSuccess(
     'Ad integration complete! Everything is functional and production-ready.',
@@ -121,8 +125,10 @@ String _getTestId(String type, String platform) {
   return platform == 'android' ? androidIds[type]! : iosIds[type]!;
 }
 
-Future<void> _updateAndroidAdConfig(String appId) async {
-  final manifestFile = File('android/app/src/main/AndroidManifest.xml');
+Future<void> _updateAndroidAdConfig(String appId, String activePath) async {
+  final manifestFile = File(
+    p.join(activePath, 'android', 'app', 'src', 'main', 'AndroidManifest.xml'),
+  );
   if (!manifestFile.existsSync()) return;
 
   printInfo('Updating AndroidManifest.xml for Ads...');
@@ -138,28 +144,28 @@ Future<void> _updateAndroidAdConfig(String appId) async {
   final metaData = """
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="$appId"/>""";
+            android:value="\$appId"/>""";
 
   if (content.contains('</activity>')) {
-    content = content.replaceFirst('</activity>', '</activity>\n$metaData');
+    content = content.replaceFirst('</activity>', '</activity>\n\$metaData');
   } else {
     content = content.replaceFirst(
       '</application>',
-      '$metaData\n</application>',
+      '\$metaData\n</application>',
     );
   }
 
   const permission =
       '<uses-permission android:name="com.google.android.gms.permission.AD_ID"/>';
   if (!content.contains('android.permission.AD_ID')) {
-    content = content.replaceFirst('<manifest', '<manifest\n    $permission');
+    content = content.replaceFirst('<manifest', '<manifest\n    \$permission');
   }
 
   manifestFile.writeAsStringSync(content);
 }
 
-Future<void> _updateIosAdConfig(String appId) async {
-  final infoPlist = File('ios/Runner/Info.plist');
+Future<void> _updateIosAdConfig(String appId, String activePath) async {
+  final infoPlist = File(p.join(activePath, 'ios', 'Runner', 'Info.plist'));
   if (!infoPlist.existsSync()) return;
 
   printInfo('Updating Info.plist for Ads...');
@@ -170,10 +176,9 @@ Future<void> _updateIosAdConfig(String appId) async {
     '',
   );
 
-  final iosConfig =
-      """
+  final iosConfig = """
 	<key>GADApplicationIdentifier</key>
-	<string>$appId</string>
+	<string>\$appId</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
@@ -185,7 +190,7 @@ Future<void> _updateIosAdConfig(String appId) async {
   if (content.contains('</dict>')) {
     final lastDictIndex = content.lastIndexOf('</dict>');
     content =
-        '${content.substring(0, lastDictIndex)}$iosConfig\n${content.substring(lastDictIndex)}';
+        '\${content.substring(0, lastDictIndex)}\$iosConfig\n\${content.substring(lastDictIndex)}';
   }
 
   infoPlist.writeAsStringSync(content);

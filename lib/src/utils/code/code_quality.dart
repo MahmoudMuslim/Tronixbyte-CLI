@@ -1,13 +1,17 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runCodeQualityTools() async {
   printSection('Elite Quality Gate & Global Test Runner');
+
+  final activePath = getActiveProjectPath();
   final totalSteps = 7;
   final results = <List<String>>[];
 
   // 1. Code Formatting
-  printStep(1, totalSteps, 'Formatting Dart files');
+  printStep(1, totalSteps, 'Formatting Dart files in $activePath');
   final formatStart = DateTime.now();
+  // runCommand uses getActiveProjectPath() as working directory
   await runCommand('dart', ['format', '.'], loadingMessage: 'Formatting code');
   results.add([
     'Formatting',
@@ -47,7 +51,7 @@ Future<void> runCodeQualityTools() async {
   ]);
 
   // 5. Integration Tests
-  final integrationDir = Directory('integration_test');
+  final integrationDir = Directory(p.join(activePath, 'integration_test'));
   if (integrationDir.existsSync()) {
     printStep(5, totalSteps, 'Running integration tests');
     final intStart = DateTime.now();
@@ -61,19 +65,23 @@ Future<void> runCodeQualityTools() async {
       '${DateTime.now().difference(intStart).inSeconds}s',
     ]);
   } else {
-    printInfo('Skipping Integration Tests (directory not found)');
+    printInfo(
+      'Skipping Integration Tests (directory not found at ${integrationDir.path})',
+    );
     results.add(['Integration', '⏩ Skipped', '-']);
   }
 
   // 6. Visual Regression
-  final baselineDir = Directory('screenshots/baseline');
+  final baselineDir = Directory(p.join(activePath, 'screenshots', 'baseline'));
   if (baselineDir.existsSync()) {
     printStep(6, totalSteps, 'Visual Regression Check');
     // Calling the comparison utility directly
     await runScreenshotComparison();
     results.add(['Visual', '✅ Verified', '-']);
   } else {
-    printInfo('Skipping Visual Regression (baseline directory not found)');
+    printInfo(
+      'Skipping Visual Regression (baseline directory not found at ${baselineDir.path})',
+    );
     results.add(['Visual', '⏩ Skipped', '-']);
   }
 
@@ -86,6 +94,8 @@ Future<void> runCodeQualityTools() async {
   printTable(['Step', 'Result', 'Time'], results);
 
   printSuccess('Quality gate complete! Project is stable and verified.');
-  printInfo('Unit Test Coverage: coverage/lcov.info');
+  printInfo(
+    'Unit Test Coverage: ${p.join(activePath, 'coverage', 'lcov.info')}',
+  );
   ask('Press Enter to return');
 }

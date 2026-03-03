@@ -4,9 +4,10 @@ import 'package:tools/tools.dart';
 Future<void> enforceNamingConventions() async {
   printSection('Naming Convention Enforcer');
 
-  final libDir = Directory('lib');
+  final activePath = getActiveProjectPath();
+  final libDir = Directory(p.join(activePath, 'lib'));
   if (!libDir.existsSync()) {
-    printError('lib directory not found.');
+    printError('lib directory not found at ${libDir.path}');
     return;
   }
 
@@ -14,7 +15,7 @@ Future<void> enforceNamingConventions() async {
   final List<FileSystemEntity> entities = libDir.listSync(recursive: true);
 
   await loadingSpinner(
-    'Enforcing snake_case naming conventions across lib/',
+    'Enforcing snake_case naming conventions across lib/ in $activePath',
     () async {
       for (final entity in entities) {
         final name = p.basename(entity.path);

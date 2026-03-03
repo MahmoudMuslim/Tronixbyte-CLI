@@ -1,9 +1,13 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runEnvSecretWizard() async {
   printSection('Environment Secret Wizard');
+
+  final activePath = getActiveProjectPath();
+
   printInfo(
-    'This tool helps you set up and sync sensitive keys across your environments.',
+    'This tool helps you set up and sync sensitive keys across your environments in $activePath.',
   );
 
   final keys = [
@@ -28,11 +32,11 @@ Future<void> runEnvSecretWizard() async {
   }
 
   await loadingSpinner(
-    'Synchronizing secrets across all environments',
+    'Synchronizing secrets across all environments in $activePath',
     () async {
       final envs = ['dev', 'stg', 'prod'];
       for (final env in envs) {
-        final file = File('.env.$env');
+        final file = File(p.join(activePath, '.env.$env'));
         final Map<String, String> currentEnvData = {};
 
         if (file.existsSync()) {
@@ -59,7 +63,7 @@ Future<void> runEnvSecretWizard() async {
       }
 
       // Update .env.example (without values)
-      final exampleFile = File('.env.example');
+      final exampleFile = File(p.join(activePath, '.env.example'));
       final exampleBuffer = StringBuffer();
       final exampleKeys = {...values.keys};
       if (exampleFile.existsSync()) {

@@ -1,7 +1,10 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> generateVsCodeTasks() async {
   printSection('VS Code Task Integration');
+
+  final activePath = getActiveProjectPath();
 
   final tasks = {
     "version": "2.0.0",
@@ -9,7 +12,7 @@ Future<void> generateVsCodeTasks() async {
       {
         "label": "Tronixbyte: Sync Project",
         "type": "shell",
-        "command": "dart bin/tools.dart",
+        "command": "tools",
         "args": ["sync"],
         "group": "build",
         "presentation": {"reveal": "always", "panel": "new"},
@@ -17,28 +20,28 @@ Future<void> generateVsCodeTasks() async {
       {
         "label": "Tronixbyte: Run Project Repair (Nuclear)",
         "type": "shell",
-        "command": "dart bin/tools.dart",
+        "command": "tools",
         "args": ["repair"],
         "group": "none",
       },
       {
         "label": "Tronixbyte: Project Doctor (Diagnosis)",
         "type": "shell",
-        "command": "dart bin/tools.dart",
+        "command": "tools",
         "args": ["doctor"],
         "group": "none",
       },
       {
         "label": "Tronixbyte: Security Audit",
         "type": "shell",
-        "command": "dart bin/tools.dart",
+        "command": "tools",
         "args": ["audit"],
         "group": "none",
       },
       {
         "label": "Tronixbyte: Code Quality Suite",
         "type": "shell",
-        "command": "dart bin/tools.dart",
+        "command": "tools",
         "args": ["quality"],
         "group": "none",
       },
@@ -59,19 +62,22 @@ Future<void> generateVsCodeTasks() async {
       {
         "label": "Tronixbyte: Project Stats & Dashboard",
         "type": "shell",
-        "command": "dart bin/tools.dart",
+        "command": "tools",
         "args": ["stats"],
       },
     ],
   };
 
-  await loadingSpinner('Generating .vscode/tasks.json', () async {
-    final vscodeDir = Directory('.vscode');
-    if (!vscodeDir.existsSync()) vscodeDir.createSync();
+  await loadingSpinner(
+    'Generating .vscode/tasks.json in $activePath',
+    () async {
+      final vscodeDir = Directory(p.join(activePath, '.vscode'));
+      if (!vscodeDir.existsSync()) vscodeDir.createSync(recursive: true);
 
-    final file = File('.vscode/tasks.json');
-    file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(tasks));
-  });
+      final file = File(p.join(vscodeDir.path, 'tasks.json'));
+      file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(tasks));
+    },
+  );
 
   printSuccess('VS Code task integration generated successfully!');
   printInfo('Press Ctrl+Shift+B in VS Code to see your Tronixbyte tasks!');

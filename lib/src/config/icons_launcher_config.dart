@@ -1,8 +1,10 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> configureIconsLauncher() async {
   printSection('App Icon Configuration');
 
+  final activePath = getActiveProjectPath();
   final ilSb = StringBuffer();
   final platforms = ['android', 'ios', 'web', 'macos', 'windows', 'linux'];
 
@@ -26,26 +28,26 @@ Future<void> configureIconsLauncher() async {
       }
 
       if (platform == 'android') {
-        _addField(
+        addField(
           ilSb,
           'notification_image',
           ask('Android Notification Image'),
           2,
         );
-        _addField(
+        addField(
           ilSb,
           'adaptive_background_image',
           ask('Adaptive Background Image'),
           2,
         );
-        _addField(
+        addField(
           ilSb,
           'adaptive_foreground_image',
           ask('Adaptive Foreground Image'),
           2,
         );
-        _addField(ilSb, 'adaptive_round_image', ask('Adaptive Round Image'), 2);
-        _addField(
+        addField(ilSb, 'adaptive_round_image', ask('Adaptive Round Image'), 2);
+        addField(
           ilSb,
           'adaptive_monochrome_image',
           ask('Adaptive Monochrome Image'),
@@ -54,12 +56,12 @@ Future<void> configureIconsLauncher() async {
       }
 
       if (platform == 'ios') {
-        _addField(ilSb, 'dark_path', ask('Dark Path (iOS 18+)'), 2);
-        _addField(ilSb, 'tinted_path', ask('Tinted Path (iOS 18+)'), 2);
+        addField(ilSb, 'dark_path', ask('Dark Path (iOS 18+)'), 2);
+        addField(ilSb, 'tinted_path', ask('Tinted Path (iOS 18+)'), 2);
       }
 
       if (platform == 'web') {
-        _addField(ilSb, 'favicon_path', ask('Favicon Path'), 2);
+        addField(ilSb, 'favicon_path', ask('Favicon Path'), 2);
       }
     }
   }
@@ -68,7 +70,7 @@ Future<void> configureIconsLauncher() async {
     await loadingSpinner(
       'Generating icon configurations and creating assets',
       () async {
-        final file = File('icons_launcher.yaml');
+        final file = File(p.join(activePath, 'icons_launcher.yaml'));
         file.writeAsStringSync(ilSb.toString());
 
         printInfo('Running icons_launcher:create...');
@@ -81,11 +83,5 @@ Future<void> configureIconsLauncher() async {
     );
   } else {
     printInfo('No platforms enabled. Skipping icon generation.');
-  }
-}
-
-void _addField(StringBuffer sb, String key, String? value, [int indent = 0]) {
-  if (value != null && value.isNotEmpty) {
-    sb.writeln('${'  ' * indent}$key: $value');
   }
 }

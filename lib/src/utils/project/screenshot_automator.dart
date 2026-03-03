@@ -1,14 +1,17 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> setupScreenshotAutomation() async {
   printSection('App Screenshot Automator');
 
+  final activePath = getActiveProjectPath();
   final projectName = await getProjectName();
 
   await loadingSpinner(
-    'Configuring integration_test for screenshots',
+    'Configuring integration_test for screenshots in $activePath',
     () async {
       // 1. Add dependency
+      // runCommand already uses workingDirectory: activePath
       await runCommand('flutter', [
         'pub',
         'add',
@@ -17,11 +20,13 @@ Future<void> setupScreenshotAutomation() async {
       ]);
 
       // 2. Create test directory if missing
-      final testDir = Directory('integration_test');
-      if (!testDir.existsSync()) testDir.createSync();
+      final testDir = Directory(p.join(activePath, 'integration_test'));
+      if (!testDir.existsSync()) testDir.createSync(recursive: true);
 
       // 3. Create screenshot capture test
-      final testFile = File('integration_test/screenshot_test.dart');
+      final testFile = File(
+        p.join(activePath, 'integration_test', 'screenshot_test.dart'),
+      );
       testFile.writeAsStringSync("""
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,8 +49,11 @@ void main() {
 """);
 
       // 4. Create driver script
-      final driverFile = File('test_driver/integration_test.dart');
-      if (!driverFile.parent.existsSync()) driverFile.parent.createSync();
+      final driverFile = File(
+        p.join(activePath, 'test_driver', 'integration_test.dart'),
+      );
+      if (!driverFile.parent.existsSync())
+        driverFile.parent.createSync(recursive: true);
       driverFile.writeAsStringSync("""
 import 'package:integration_test/integration_test_driver.dart';
 
@@ -54,7 +62,9 @@ Future<void> main() => integrationDriver();
     },
   );
 
-  printSuccess('Screenshot automation environment configured!');
+  printSuccess(
+    'Screenshot automation environment configured in active project!',
+  );
   printInfo('Target Devices to be simulated:');
   print('   - iPhone 14 Pro Max (1290 x 2796)');
   print('   - iPhone 8 Plus (1242 x 2208)');
@@ -74,7 +84,7 @@ Future<void> main() => integrationDriver();
     ], loadingMessage: 'Running screenshot capture suite');
 
     printSuccess(
-      'Screenshots captured and saved to build/integration_test_screenshots/',
+      'Screenshots captured and saved to project build/integration_test_screenshots/',
     );
   }
 }

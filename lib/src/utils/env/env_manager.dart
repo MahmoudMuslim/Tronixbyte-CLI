@@ -1,17 +1,16 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> switchEnvironment() async {
   printSection('Environment Switcher');
 
+  final activePath = getActiveProjectPath();
   final envs = ['dev', 'stg', 'prod'];
-  for (var i = 0; i < envs.length; i++) {
-    print(' $cyan${i + 1}:$reset ${envs[i].toUpperCase()}');
-  }
-  print(' $cyan${envs.length + 1}:$reset Back');
 
-  final choice = ask('Select an environment (1-${envs.length + 1})');
+  final options = envs.map((e) => e.toUpperCase()).toList();
+  final choice = selectOption('Select Environment', options, showBack: true);
 
-  if (choice == null || choice == '${envs.length + 1}') return;
+  if (choice == 'back' || choice == null) return;
 
   final index = int.tryParse(choice);
   if (index == null || index < 1 || index > envs.length) {
@@ -20,14 +19,16 @@ Future<void> switchEnvironment() async {
   }
 
   final selectedEnv = envs[index - 1];
-  final sourceFile = File('.env.$selectedEnv');
-  final targetFile = File('.env');
+  final sourceFile = File(p.join(activePath, '.env.$selectedEnv'));
+  final targetFile = File(p.join(activePath, '.env'));
 
   await loadingSpinner(
-    'Switching to ${selectedEnv.toUpperCase()} environment',
+    'Switching to ${selectedEnv.toUpperCase()} environment in $activePath',
     () async {
       if (!sourceFile.existsSync()) {
-        printWarning('.env.$selectedEnv not found. Creating a template...');
+        printWarning(
+          '.env.$selectedEnv not found in project. Creating a template...',
+        );
         sourceFile.writeAsStringSync(
           'BASE_URL=https://api.$selectedEnv.example.com/\nDEBUG=true\nENV=$selectedEnv\n',
         );
@@ -39,6 +40,6 @@ Future<void> switchEnvironment() async {
 
   printSuccess('Successfully switched to ${selectedEnv.toUpperCase()}!');
   printInfo(
-    'Current .env now reflects ${selectedEnv.toUpperCase()} configuration.',
+    'Project .env now reflects ${selectedEnv.toUpperCase()} configuration.',
   );
 }

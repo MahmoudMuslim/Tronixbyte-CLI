@@ -4,39 +4,46 @@ import 'package:tools/tools.dart';
 Future<void> checkDependencies() async {
   printSection('Clean Architecture Dependency Guard');
 
-  final featuresDir = Directory('lib/features');
+  final activePath = getActiveProjectPath();
+  final featuresDir = Directory(p.join(activePath, 'lib', 'features'));
+
   if (!featuresDir.existsSync()) {
     printWarning(
-      'lib/features directory not found. Skipping architectural check.',
+      'lib/features directory not found in the active project. Skipping architectural check.',
     );
     return;
   }
 
   int violations = 0;
 
-  await loadingSpinner('Verifying architectural layer boundaries', () async {
-    final features = featuresDir.listSync().whereType<Directory>();
-    for (final feature in features) {
-      final featureName = p.basename(feature.path);
-      if (featureName.startsWith('z_')) continue;
+  await loadingSpinner(
+    'Verifying architectural layer boundaries in $activePath',
+    () async {
+      final features = featuresDir.listSync().whereType<Directory>();
+      for (final feature in features) {
+        final featureName = p.basename(feature.path);
+        if (featureName.startsWith('z_')) continue;
 
-      // Check Domain Layer (Should not depend on Data or Presentation)
-      violations += _checkLayer(
-        featurePath: p.join(feature.path, 'domain'),
-        layerName: 'Domain',
-        forbidden: ['data', 'presentation'],
-        featureName: featureName,
-      );
+        // Check Domain Layer (Should not depend on Data or Presentation)
+        violations += _checkLayer(
+          featurePath: p.join(feature.path, 'domain'),
+          layerName: 'Domain',
+          forbidden: ['data', 'presentation'],
+          featureName: featureName,
+          activePath: activePath,
+        );
 
-      // Check Data Layer (Should not depend on Presentation)
-      violations += _checkLayer(
-        featurePath: p.join(feature.path, 'data'),
-        layerName: 'Data',
-        forbidden: ['presentation'],
-        featureName: featureName,
-      );
-    }
-  });
+        // Check Data Layer (Should not depend on Presentation)
+        violations += _checkLayer(
+          featurePath: p.join(feature.path, 'data'),
+          layerName: 'Data',
+          forbidden: ['presentation'],
+          featureName: featureName,
+          activePath: activePath,
+        );
+      }
+    },
+  );
 
   if (violations == 0) {
     printSuccess('No architectural violations found. Your project is clean!');
@@ -54,6 +61,7 @@ int _checkLayer({
   required String layerName,
   required List<String> forbidden,
   required String featureName,
+  required String activePath,
 }) {
   final dir = Directory(featurePath);
   if (!dir.existsSync()) return 0;
@@ -76,7 +84,9 @@ int _checkLayer({
             print(
               '\n   $red$bold🚨 Violation in $featureName [$layerName]:$reset',
             );
-            print('      ${cyan}File:$reset ${p.relative(file.path)}');
+            print(
+              '      ${cyan}File:$reset ${p.relative(file.path, from: activePath)}',
+            );
             print('      ${cyan}Illegal Import:$reset $trimmedLine');
             layerViolations++;
           }

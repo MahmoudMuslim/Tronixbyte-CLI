@@ -1,7 +1,10 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> generateDebugConfigs() async {
   printSection('Debug Configurations Generator');
+
+  final activePath = getActiveProjectPath();
 
   final configs = {
     "version": "0.2.0",
@@ -30,13 +33,18 @@ Future<void> generateDebugConfigs() async {
     ],
   };
 
-  await loadingSpinner('Generating .vscode/launch.json', () async {
-    final vscodeDir = Directory('.vscode');
-    if (!vscodeDir.existsSync()) vscodeDir.createSync();
+  await loadingSpinner(
+    'Generating .vscode/launch.json in $activePath',
+    () async {
+      final vscodeDir = Directory(p.join(activePath, '.vscode'));
+      if (!vscodeDir.existsSync()) vscodeDir.createSync(recursive: true);
 
-    final file = File('.vscode/launch.json');
-    file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(configs));
-  });
+      final file = File(p.join(vscodeDir.path, 'launch.json'));
+      file.writeAsStringSync(
+        const JsonEncoder.withIndent('  ').convert(configs),
+      );
+    },
+  );
 
   printSuccess('Debug configurations generated successfully!');
   printInfo(

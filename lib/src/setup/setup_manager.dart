@@ -1,7 +1,12 @@
 import 'package:tools/tools.dart';
+import 'package:path/path.dart' as p;
 
 Future<void> runFullSetup() async {
   printSection('Elite Full Project Initialization');
+
+  // Ensure we have project context before starting
+  await ensureProjectRoot();
+  final activePath = getActiveProjectPath();
 
   String projectName;
   try {
@@ -139,8 +144,9 @@ Future<void> runFullSetup() async {
     'lib/core/services/storage',
   ];
   for (final dir in baseDirs) {
-    if (!Directory(dir).existsSync()) {
-      Directory(dir).createSync(recursive: true);
+    final d = Directory(p.join(activePath, dir));
+    if (!d.existsSync()) {
+      d.createSync(recursive: true);
     }
   }
 
@@ -201,7 +207,7 @@ Future<void> runFullSetup() async {
   };
 
   baseFiles.forEach((path, content) {
-    final file = File(path);
+    final file = File(p.join(activePath, path));
     if (!file.parent.existsSync()) file.parent.createSync(recursive: true);
     if (!file.existsSync()) {
       file.writeAsStringSync(content);
@@ -314,5 +320,5 @@ Future<void> runFullSetup() async {
     '--delete-conflicting-outputs',
   ], loadingMessage: 'Generating code');
 
-  printSuccess('Elite project initialization complete!');
+  printSuccess('Elite project initialization complete in $activePath!');
 }

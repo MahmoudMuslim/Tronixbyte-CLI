@@ -4,11 +4,12 @@ import 'package:tools/tools.dart';
 Future<void> runTestSuiteGenerator() async {
   printSection('Advanced Test Suite Generator');
 
+  final activePath = getActiveProjectPath();
   final projectName = await getProjectName();
-  final featuresDir = Directory('lib/features');
+  final featuresDir = Directory(p.join(activePath, 'lib', 'features'));
 
   if (!featuresDir.existsSync()) {
-    printError('lib/features directory not found.');
+    printError('lib/features directory not found at ${featuresDir.path}.');
     return;
   }
 
@@ -21,16 +22,20 @@ Future<void> runTestSuiteGenerator() async {
   final choice = selectOption('Testing Options', options, showBack: true);
   if (choice == 'back' || choice == null) return;
 
-  await loadingSpinner('Generating Elite Test Suite', () async {
+  await loadingSpinner('Generating Elite Test Suite in $activePath', () async {
     switch (choice) {
       case '1':
-        await _generateWidgetTests(featuresDir, projectName);
+        await _generateWidgetTests(featuresDir, projectName, activePath);
         break;
       case '2':
-        await _scaffoldGoldenTests();
+        await _scaffoldGoldenTests(activePath);
         break;
       case '3':
-        await _generateIntegrationTemplates(featuresDir, projectName);
+        await _generateIntegrationTemplates(
+          featuresDir,
+          projectName,
+          activePath,
+        );
         break;
     }
   });
@@ -41,6 +46,7 @@ Future<void> runTestSuiteGenerator() async {
 Future<void> _generateWidgetTests(
   Directory featuresDir,
   String projectName,
+  String activePath,
 ) async {
   final screens = featuresDir
       .listSync(recursive: true)
@@ -54,10 +60,15 @@ Future<void> _generateWidgetTests(
   for (final file in screens) {
     final fileName = p.basenameWithoutExtension(file.path);
     final className = _toPascalCase(fileName);
+
+    // Relative path to current feature name
+    final featureName = p.basename(p.dirname(p.dirname(p.dirname(file.path))));
+
     final testPath = p.join(
+      activePath,
       'test',
       'features',
-      p.basename(p.dirname(p.dirname(p.dirname(file.path)))),
+      featureName,
       'presentation',
       '${fileName}_test.dart',
     );
@@ -70,29 +81,35 @@ Future<void> _generateWidgetTests(
     }
 
     final content = getWidgetTestsTemplate(projectName, className);
-    testFile.writeAsStringSync(content.trim(), mode: FileMode.write);
-    printInfo('Scaffolded Widget Test: $testPath');
+    testFile.writeAsStringSync(content.trim() + '\n', mode: FileMode.write);
+    printInfo(
+      'Scaffolded Widget Test: ${p.relative(testPath, from: activePath)}',
+    );
   }
 }
 
-Future<void> _scaffoldGoldenTests() async {
+Future<void> _scaffoldGoldenTests(String activePath) async {
+  // runCommand already uses workingDirectory: activePath
   await runCommand('flutter', ['pub', 'add', 'dev:alchemist']);
 
-  final goldenDir = Directory('test/goldens');
+  final goldenDir = Directory(p.join(activePath, 'test', 'goldens'));
   if (!goldenDir.existsSync()) goldenDir.createSync(recursive: true);
 
-  final readme = File('test/goldens/README.md');
+  final readme = File(p.join(goldenDir.path, 'README.md'));
   readme.writeAsStringSync(
-    getScaffoldGoldenTestsTemplate(),
+    getScaffoldGoldenTestsTemplate().trim() + '\n',
     mode: FileMode.write,
   );
 
-  printInfo('Golden test infrastructure configured with "alchemist".');
+  printInfo(
+    'Golden test infrastructure configured with "alchemist" in active project.',
+  );
 }
 
 Future<void> _generateIntegrationTemplates(
   Directory featuresDir,
   String projectName,
+  String activePath,
 ) async {
   final features = featuresDir.listSync().whereType<Directory>().toList();
 
@@ -100,7 +117,11 @@ Future<void> _generateIntegrationTemplates(
     final name = p.basename(feature.path);
     if (name.startsWith('z_')) continue;
 
-    final testPath = p.join('integration_test', '${name}_flow_test.dart');
+    final testPath = p.join(
+      activePath,
+      'integration_test',
+      '${name}_flow_test.dart',
+    );
     final testFile = File(testPath);
     if (testFile.existsSync()) continue;
 
@@ -109,8 +130,10 @@ Future<void> _generateIntegrationTemplates(
     }
 
     final content = getGenerateIntegrationTemplate(name, projectName);
-    testFile.writeAsStringSync(content.trim(), mode: FileMode.write);
-    printInfo('Scaffolded Integration Template: $testPath');
+    testFile.writeAsStringSync(content.trim() + '\n', mode: FileMode.write);
+    printInfo(
+      'Scaffolded Integration Template: ${p.relative(testPath, from: activePath)}',
+    );
   }
 }
 

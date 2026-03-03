@@ -4,8 +4,14 @@ import 'package:tools/tools.dart';
 Future<void> createFlutterProject() async {
   printSection('Create New Flutter Project');
 
-  final baseDir = ask('Base directory (Enter for current, "b" to back)') ?? '.';
-  if (baseDir.toLowerCase() == 'b') return;
+  final currentTerminalDir = Directory.current.absolute.path;
+  final baseDirInput = ask(
+    'Base directory (Enter for current: $currentTerminalDir, "b" to back)',
+  );
+
+  if (baseDirInput?.toLowerCase() == 'b') return;
+
+  final baseDir = baseDirInput ?? currentTerminalDir;
 
   String? projectName;
   while (projectName == null) {
@@ -44,20 +50,39 @@ Future<void> createFlutterProject() async {
   args.addAll(['--template', template]);
   if (isEmpty) args.add('--empty');
 
-  await runCommand('flutter', args, loadingMessage: 'Creating Flutter project');
+  // We must pass workingDir to avoid runCommand defaulting to getActiveProjectPath()
+  await runCommand(
+    'flutter',
+    args,
+    loadingMessage: 'Creating Flutter project',
+    workingDir: baseDir,
+  );
 
-  // Save the created project path
   final absolutePath = Directory(projectPath).absolute.path;
   InputHistoryManager.saveInput('created_project', absolutePath);
 
-  printSuccess('Flutter project created successfully at $projectPath');
+  printSuccess('Flutter project created successfully at $absolutePath');
+
+  final manageNow =
+      (ask('Would you like to manage this project now? (y/n)') ?? 'y')
+          .toLowerCase() ==
+      'y';
+  if (manageNow) {
+    setProjectContext(absolutePath);
+  }
 }
 
 Future<void> createDartProject() async {
   printSection('Create New Dart Project');
 
-  final baseDir = ask('Base directory (Enter for current, "b" to back)') ?? '.';
-  if (baseDir.toLowerCase() == 'b') return;
+  final currentTerminalDir = Directory.current.absolute.path;
+  final baseDirInput = ask(
+    'Base directory (Enter for current: $currentTerminalDir, "b" to back)',
+  );
+
+  if (baseDirInput?.toLowerCase() == 'b') return;
+
+  final baseDir = baseDirInput ?? currentTerminalDir;
 
   String? projectName;
   while (projectName == null) {
@@ -85,19 +110,29 @@ Future<void> createDartProject() async {
   if (force) args.add('--force');
   args.add(projectPath);
 
-  await runCommand('dart', args, loadingMessage: 'Creating Dart project');
+  // We must pass workingDir to avoid runCommand defaulting to getActiveProjectPath()
+  await runCommand(
+    'dart',
+    args,
+    loadingMessage: 'Creating Dart project',
+    workingDir: baseDir,
+  );
 
-  // Save the created project path
   final absolutePath = Directory(projectPath).absolute.path;
   InputHistoryManager.saveInput('created_project', absolutePath);
 
-  printSuccess('Dart project created successfully at $projectPath');
+  printSuccess('Dart project created successfully at $absolutePath');
+
+  final manageNow =
+      (ask('Would you like to manage this project now? (y/n)') ?? 'y')
+          .toLowerCase() ==
+      'y';
+  if (manageNow) {
+    setProjectContext(absolutePath);
+  }
 }
 
 bool _isValidDartPackageName(String name) {
-  // Dart package names must be lowercase, start with a letter or underscore,
-  // and contain only alphanumeric characters and underscores.
-  // Actually, standard recommendation is lowercase_with_underscores.
   final regex = RegExp(r'^[a-z][a-z0-9_]*$');
   return regex.hasMatch(name);
 }

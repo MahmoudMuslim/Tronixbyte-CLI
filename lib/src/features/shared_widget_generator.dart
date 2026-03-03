@@ -1,8 +1,10 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> generateSharedWidget() async {
   printSection('Shared Widget Generator');
 
+  final activePath = getActiveProjectPath();
   final name = ask('Enter the widget name (e.g., custom_button)');
   if (name == null || name.isEmpty) return;
 
@@ -10,7 +12,9 @@ Future<void> generateSharedWidget() async {
       .split('_')
       .map((e) => e[0].toUpperCase() + e.substring(1))
       .join();
-  final widgetPath = 'lib/shared/widgets/$name.dart';
+
+  final widgetDir = Directory(p.join(activePath, 'lib', 'shared', 'widgets'));
+  final widgetPath = p.join(widgetDir.path, '$name.dart');
 
   if (File(widgetPath).existsSync()) {
     printError('Widget "$name" already exists at $widgetPath');
@@ -32,7 +36,6 @@ class $namePascal extends StatelessWidget {
 }
 """;
 
-    final widgetDir = Directory('lib/shared/widgets');
     if (!widgetDir.existsSync()) {
       widgetDir.createSync(recursive: true);
     }
@@ -41,7 +44,7 @@ class $namePascal extends StatelessWidget {
     printInfo('Generated: $widgetPath');
 
     // Update barrel file
-    final barrelFile = File('lib/shared/widgets/z_widgets.dart');
+    final barrelFile = File(p.join(widgetDir.path, 'z_widgets.dart'));
     final exportLine = "export '$name.dart';\n";
 
     if (barrelFile.existsSync()) {
@@ -52,11 +55,11 @@ class $namePascal extends StatelessWidget {
               ? '$content$exportLine'
               : '$content\n$exportLine',
         );
-        printInfo('Updated lib/shared/widgets/z_widgets.dart');
+        printInfo('Updated ${barrelFile.path}');
       }
     } else {
       barrelFile.writeAsStringSync(exportLine);
-      printInfo('Created lib/shared/widgets/z_widgets.dart');
+      printInfo('Created ${barrelFile.path}');
     }
   });
 

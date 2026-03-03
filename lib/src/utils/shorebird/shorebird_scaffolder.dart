@@ -1,10 +1,13 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> scaffoldShorebird() async {
   printSection('Shorebird Integration Scaffolder');
 
+  final activePath = getActiveProjectPath();
   final projectName = await getProjectName();
 
+  // runCommand already uses workingDirectory: activePath
   await runCommand('flutter', [
     'pub',
     'add',
@@ -12,12 +15,16 @@ Future<void> scaffoldShorebird() async {
   ], loadingMessage: 'Adding shorebird_code_push dependency');
 
   await loadingSpinner(
-    'Generating Shorebird service and wiring injection',
+    'Generating Shorebird service and wiring injection in $activePath',
     () async {
-      final serviceDir = Directory('lib/core/services');
+      final serviceDir = Directory(
+        p.join(activePath, 'lib', 'core', 'services'),
+      );
       if (!serviceDir.existsSync()) serviceDir.createSync(recursive: true);
 
-      final serviceFile = File('lib/core/services/shorebird_service.dart');
+      final serviceFile = File(
+        p.join(serviceDir.path, 'shorebird_service.dart'),
+      );
       serviceFile.writeAsStringSync("""
 import 'package:$projectName/$projectName.dart';
 
@@ -42,18 +49,10 @@ class ShorebirdService {
 }
 """);
 
-      final barrelFile = File('lib/core/services/z_services.dart');
-      final exportLine = "export 'shorebird_service.dart';\n";
-      if (!barrelFile.existsSync()) {
-        barrelFile.writeAsStringSync(exportLine);
-      } else {
-        String content = barrelFile.readAsStringSync();
-        if (!content.contains('shorebird_service.dart')) {
-          barrelFile.writeAsStringSync("$content$exportLine");
-        }
-      }
+      // Use global barrel update utility
+      updateServiceBarrel('shorebird_service.dart');
 
-      final mainFile = File('lib/main.dart');
+      final mainFile = File(p.join(activePath, 'lib', 'main.dart'));
       if (mainFile.existsSync()) {
         String content = mainFile.readAsStringSync();
         if (!content.contains('ShorebirdService.init()')) {
@@ -62,13 +61,13 @@ class ShorebirdService {
             'WidgetsFlutterBinding.ensureInitialized();\n\n  // Initialize Shorebird\n  await ShorebirdService.init();',
           );
           mainFile.writeAsStringSync(content);
-          printInfo('Shorebird init added to lib/main.dart');
+          printInfo('Shorebird init added to ${mainFile.path}');
         }
       }
     },
   );
 
   printSuccess(
-    'Shorebird scaffolding complete! Integrated into core services and main.dart.',
+    'Shorebird scaffolding complete! Integrated into core services and main.dart in active project.',
   );
 }

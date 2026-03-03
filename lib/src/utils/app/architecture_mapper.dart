@@ -4,9 +4,10 @@ import 'package:tools/tools.dart';
 Future<void> runArchitectureMapping() async {
   printSection('📊 Project Architectural Map (Graphviz)');
 
-  final featuresDir = Directory('lib/features');
+  final activePath = getActiveProjectPath();
+  final featuresDir = Directory(p.join(activePath, 'lib', 'features'));
   if (!featuresDir.existsSync()) {
-    printError('lib/features directory not found.');
+    printError('lib/features directory not found at ${featuresDir.path}');
     return;
   }
 
@@ -62,10 +63,12 @@ Future<void> runArchitectureMapping() async {
 
   dotBuffer.writeln('}');
 
-  final dotFile = File('ARCHITECTURE.dot');
+  final dotFile = File(p.join(activePath, 'ARCHITECTURE.dot'));
   dotFile.writeAsStringSync(dotBuffer.toString(), mode: FileMode.write);
 
-  printSuccess('Graphviz DOT file generated: ARCHITECTURE.dot');
+  printSuccess(
+    'Graphviz DOT file generated in active project: ARCHITECTURE.dot',
+  );
   printInfo(
     '👉 To visualize, use: "dot -Tpng ARCHITECTURE.dot -o ARCHITECTURE.png"',
   );
@@ -76,6 +79,7 @@ Future<void> runArchitectureMapping() async {
           .toLowerCase() ==
       'y';
   if (open) {
+    // runCommand uses getActiveProjectPath() internally
     await runCommand('dot', [
       '-Tpng',
       'ARCHITECTURE.dot',

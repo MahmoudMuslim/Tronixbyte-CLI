@@ -1,11 +1,15 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runVelocityPredictor() async {
   printSection('📈 Project Velocity Predictor');
 
-  if (!Directory('.git').existsSync()) {
+  final activePath = getActiveProjectPath();
+  final gitDir = Directory(p.join(activePath, '.git'));
+
+  if (!gitDir.existsSync()) {
     printError(
-      'Git repository not detected. Velocity analysis requires Git history.',
+      'Git repository not detected in $activePath. Velocity analysis requires Git history.',
     );
     return;
   }
@@ -13,20 +17,26 @@ Future<void> runVelocityPredictor() async {
   final List<DateTime> commitDates = [];
   int totalCommits = 0;
 
-  await loadingSpinner('Analyzing Git commit velocity', () async {
-    final result = await Process.run('git', ['log', '--pretty=format:%ai']);
+  await loadingSpinner(
+    'Analyzing Git commit velocity in $activePath',
+    () async {
+      final result = await Process.run('git', [
+        'log',
+        '--pretty=format:%ai',
+      ], workingDirectory: activePath);
 
-    if (result.exitCode == 0) {
-      final lines = result.stdout.toString().split('\n');
-      for (final line in lines) {
-        if (line.trim().isEmpty) continue;
-        try {
-          commitDates.add(DateTime.parse(line.trim()));
-          totalCommits++;
-        } catch (_) {}
+      if (result.exitCode == 0) {
+        final lines = result.stdout.toString().split('\n');
+        for (final line in lines) {
+          if (line.trim().isEmpty) continue;
+          try {
+            commitDates.add(DateTime.parse(line.trim()));
+            totalCommits++;
+          } catch (_) {}
+        }
       }
-    }
-  });
+    },
+  );
 
   if (commitDates.isEmpty) {
     printWarning('No commit history found to analyze.');
@@ -38,7 +48,7 @@ Future<void> runVelocityPredictor() async {
   final newest = commitDates.first;
   final ageInDays = newest.difference(oldest).inDays.clamp(1, 10000);
   final weeks = ageInDays / 7;
-  final commitsPerWeek = totalCommits / weeks;
+  final commitsPerWeek = totalCommits / (weeks > 0 ? weeks : 1);
 
   // 2. Predict Release Date (Simplified model)
   // Assuming a "Standard Elite Project" target of 200 high-quality commits for a major release
@@ -55,7 +65,7 @@ Future<void> runVelocityPredictor() async {
   );
 
   // 3. Display Velocity Dashboard
-  print('\n$blue$bold🚀 DEVELOPMENT VELOCITY DASHBOARD$reset');
+  print('\n$blue$bold🚀 DEVELOPMENT VELOCITY DASHBOARD for $activePath$reset');
   printTable(
     ['Metric', 'Value'],
     [
@@ -66,8 +76,7 @@ Future<void> runVelocityPredictor() async {
     ],
   );
 
-  print('\n$cyan$bold📊 MOMENTUM VISUALIZATION$reset');
-  // Simple momentum chart (commits in last 4 weeks)
+  print('\n$cyan$bold📊 MOMENTUM VISUALIZATION (Last 4 Weeks)$reset');
   final now = DateTime.now();
   for (int i = 3; i >= 0; i--) {
     final weekStart = now.subtract(Duration(days: (i + 1) * 7));

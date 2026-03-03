@@ -1,16 +1,20 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runFeatureCoverageAudit() async {
   printSection('📊 Feature-Level Code Coverage');
 
-  final lcovFile = File('coverage/lcov.info');
+  final activePath = getActiveProjectPath();
+  final lcovFile = File(p.join(activePath, 'coverage', 'lcov.info'));
+
   if (!lcovFile.existsSync()) {
-    printWarning('coverage/lcov.info not found.');
+    printWarning('coverage/lcov.info not found in $activePath.');
     final runTests =
         (ask('Run unit tests now to generate coverage? (y/n)') ?? 'n')
             .toLowerCase() ==
         'y';
     if (runTests) {
+      // runCommand uses getActiveProjectPath() internally
       await runCommand('flutter', [
         'test',
         '--coverage',
@@ -21,34 +25,37 @@ Future<void> runFeatureCoverageAudit() async {
   }
 
   if (!lcovFile.existsSync()) {
-    printError('Failed to locate or generate lcov.info.');
+    printError('Failed to locate or generate lcov.info at ${lcovFile.path}.');
     return;
   }
 
   final Map<String, List<int>> featureLines = {}; // featureName -> [found, hit]
 
-  await loadingSpinner('Mapping coverage to feature architecture', () async {
-    final lines = lcovFile.readAsLinesSync();
-    String? currentFile;
+  await loadingSpinner(
+    'Mapping coverage to feature architecture in $activePath',
+    () async {
+      final lines = lcovFile.readAsLinesSync();
+      String? currentFile;
 
-    for (var line in lines) {
-      if (line.startsWith('SF:')) {
-        currentFile = line.substring(3).replaceAll('\\', '/');
-      } else if (line.startsWith('LF:')) {
-        final found = int.parse(line.substring(3));
-        if (currentFile != null && currentFile.contains('/features/')) {
-          final featureName = _extractFeatureName(currentFile);
-          featureLines.putIfAbsent(featureName, () => [0, 0])[0] += found;
-        }
-      } else if (line.startsWith('LH:')) {
-        final hit = int.parse(line.substring(3));
-        if (currentFile != null && currentFile.contains('/features/')) {
-          final featureName = _extractFeatureName(currentFile);
-          featureLines.putIfAbsent(featureName, () => [0, 0])[1] += hit;
+      for (var line in lines) {
+        if (line.startsWith('SF:')) {
+          currentFile = line.substring(3).replaceAll('\\', '/');
+        } else if (line.startsWith('LF:')) {
+          final found = int.parse(line.substring(3));
+          if (currentFile != null && currentFile.contains('/features/')) {
+            final featureName = _extractFeatureName(currentFile);
+            featureLines.putIfAbsent(featureName, () => [0, 0])[0] += found;
+          }
+        } else if (line.startsWith('LH:')) {
+          final hit = int.parse(line.substring(3));
+          if (currentFile != null && currentFile.contains('/features/')) {
+            final featureName = _extractFeatureName(currentFile);
+            featureLines.putIfAbsent(featureName, () => [0, 0])[1] += hit;
+          }
         }
       }
-    }
-  });
+    },
+  );
 
   if (featureLines.isEmpty) {
     printInfo('No coverage data found for modular features.');
@@ -86,7 +93,7 @@ Future<void> runFeatureCoverageAudit() async {
     final percentage = data[0] > 0 ? (data[1] / data[0] * 100) : 0.0;
     if (percentage < 50) {
       print(
-        '   - Feature "$name" has critically low coverage ($percentage%). Prioritize unit tests.',
+        '   - Feature "$name" has critically low coverage (${percentage.toStringAsFixed(1)}%). Prioritize unit tests.',
       );
     }
   });

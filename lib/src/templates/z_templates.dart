@@ -1,3 +1,5 @@
+export 'auth/z_auth.dart';
+export 'cicd/z_cicd.dart';
 export 'config/z_config.dart';
 export 'database/z_database.dart';
 export 'extension/z_extension.dart';
@@ -6,5 +8,6 @@ export 'ide/z_ide.dart';
 export 'injection/z_injection.dart';
 export 'manager/z_manager.dart';
 export 'network/z_network.dart';
+export 'notification/z_notification.dart';
 export 'test/z_test.dart';
 export 'ui/z_ui.dart';

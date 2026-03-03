@@ -1,22 +1,27 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> configureFirebasePlatforms(String pubspec) async {
+  final activePath = getActiveProjectPath();
+
   await loadingSpinner(
-    'Configuring platform-specific Firebase settings',
+    'Configuring platform-specific Firebase settings in $activePath',
     () async {
-      await _updateAndroidManifest(pubspec);
-      await _updateIosPlist(pubspec);
-      await _updateMacosEntitlements();
-      await _updateWindowsManifest();
-      await _updateLinuxConfig();
+      await _updateAndroidManifest(pubspec, activePath);
+      await _updateIosPlist(pubspec, activePath);
+      await _updateMacosEntitlements(activePath);
+      await _updateWindowsManifest(activePath);
+      await _updateLinuxConfig(activePath);
     },
   );
 
   printSuccess('Firebase platform configurations synchronized.');
 }
 
-Future<void> _updateAndroidManifest(String pubspec) async {
-  final file = File('android/app/src/main/AndroidManifest.xml');
+Future<void> _updateAndroidManifest(String pubspec, String activePath) async {
+  final file = File(
+    p.join(activePath, 'android/app/src/main/AndroidManifest.xml'),
+  );
   if (!file.existsSync()) return;
 
   printInfo('Updating AndroidManifest.xml for Firebase & Notifications...');
@@ -35,9 +40,9 @@ Future<void> _updateAndroidManifest(String pubspec) async {
       '<uses-permission android:name="com.google.android.gms.permission.AD_ID" />',
   ];
 
-  for (final p in permissions) {
-    if (!content.contains(p)) {
-      content = content.replaceFirst('<manifest', '<manifest\n    $p');
+  for (final prm in permissions) {
+    if (!content.contains(prm)) {
+      content = content.replaceFirst('<manifest', '<manifest\n    $prm');
     }
   }
 
@@ -63,8 +68,8 @@ Future<void> _updateAndroidManifest(String pubspec) async {
   file.writeAsStringSync(content);
 }
 
-Future<void> _updateIosPlist(String pubspec) async {
-  final file = File('ios/Runner/Info.plist');
+Future<void> _updateIosPlist(String pubspec, String activePath) async {
+  final file = File(p.join(activePath, 'ios/Runner/Info.plist'));
   if (!file.existsSync()) return;
 
   printInfo('Updating Info.plist for iOS...');
@@ -87,13 +92,13 @@ Future<void> _updateIosPlist(String pubspec) async {
   file.writeAsStringSync(content);
 }
 
-Future<void> _updateMacosEntitlements() async {
+Future<void> _updateMacosEntitlements(String activePath) async {
   final paths = [
     'macos/Runner/DebugProfile.entitlements',
     'macos/Runner/Release.entitlements',
   ];
   for (final path in paths) {
-    final file = File(path);
+    final file = File(p.join(activePath, path));
     if (file.existsSync()) {
       printInfo('Updating macOS entitlements: $path');
       String content = file.readAsStringSync();
@@ -108,10 +113,10 @@ Future<void> _updateMacosEntitlements() async {
   }
 }
 
-Future<void> _updateWindowsManifest() async {
+Future<void> _updateWindowsManifest(String activePath) async {
   // Usually standard in Flutter desktop templates
 }
 
-Future<void> _updateLinuxConfig() async {
+Future<void> _updateLinuxConfig(String activePath) async {
   // Linux setup for specific plugins if needed
 }

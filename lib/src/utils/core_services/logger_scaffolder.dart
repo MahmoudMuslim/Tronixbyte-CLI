@@ -1,7 +1,10 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> scaffoldLoggerService() async {
   printSection('Logger Service Scaffolder');
+
+  final activePath = getActiveProjectPath();
 
   await runCommand('flutter', [
     'pub',
@@ -12,7 +15,9 @@ Future<void> scaffoldLoggerService() async {
   await loadingSpinner(
     'Generating LoggerService and wiring injection',
     () async {
-      final serviceFile = File('lib/core/services/logger_service.dart');
+      final serviceFile = File(
+        p.join(activePath, 'lib/core/services/logger_service.dart'),
+      );
       if (!serviceFile.parent.existsSync()) {
         serviceFile.parent.createSync(recursive: true);
       }
@@ -47,5 +52,7 @@ class LoggerService {
     },
   );
 
-  printSuccess('LoggerService ready! Use via "LoggerService.i(\'message\')".');
+  printSuccess(
+    'LoggerService ready in active project! Use via "LoggerService.i(\'message\')".',
+  );
 }

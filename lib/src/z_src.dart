@@ -9,6 +9,7 @@ export 'config/z_config.dart';
 export 'features/z_features.dart';
 export 'marketplace/z_marketplace.dart';
 export 'menus/z_menus.dart';
+export 'models/z_models.dart';
 export 'project/z_project.dart';
 export 'setup/z_setup.dart';
 export 'templates/z_templates.dart';

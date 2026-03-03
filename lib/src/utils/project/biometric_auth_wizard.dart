@@ -1,10 +1,13 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runBiometricAuthWizard() async {
   printSection('🛡️ Advanced Biometric Auth Scaffolder');
 
+  final activePath = getActiveProjectPath();
+
   printInfo(
-    'This tool will scaffold a production-ready Biometric Authentication service.',
+    'This tool will scaffold a production-ready Biometric Authentication service in $activePath.',
   );
   printInfo(
     'It uses "local_auth" for FaceID, TouchID, and Fingerprint support.',
@@ -18,59 +21,15 @@ Future<void> runBiometricAuthWizard() async {
 
   await loadingSpinner('Scaffolding Biometric Auth Service', () async {
     final projectName = await getProjectName();
-    final serviceFile = File('lib/core/services/biometric_auth_service.dart');
+    final serviceFile = File(
+      p.join(activePath, 'lib/core/services/biometric_auth_service.dart'),
+    );
 
     if (!serviceFile.parent.existsSync()) {
       serviceFile.parent.createSync(recursive: true);
     }
 
-    final content =
-        """
-import 'package:local_auth/local_auth.dart';
-import 'package:$projectName/$projectName.dart';
-
-class BiometricAuthService {
-  final LocalAuthentication _auth = LocalAuthentication();
-
-  /// Checks if the device supports any form of biometric authentication.
-  Future<bool> isBiometricAvailable() async {
-    final bool canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
-    final bool canAuthenticate = canAuthenticateWithBiometrics || await _auth.isDeviceSupported();
-    return canAuthenticate;
-  }
-
-  /// Returns a list of available biometrics (e.g., face, fingerprint).
-  Future<List<BiometricType>> getAvailableBiometrics() async {
-    try {
-      return await _auth.getAvailableBiometrics();
-    } catch (e) {
-      debugPrint('Error fetching biometrics: \$e');
-      return <BiometricType>[];
-    }
-  }
-
-  /// Triggers the biometric authentication dialog.
-  Future<bool> authenticate({
-    String localizedReason = 'Please authenticate to proceed',
-    bool stickyAuth = true,
-    bool biometricOnly = false,
-  }) async {
-    try {
-      return await _auth.authenticate(
-        localizedReason: localizedReason,
-        options: AuthenticationOptions(
-          stickyAuth: stickyAuth,
-          biometricOnly: biometricOnly,
-          useErrorDialogs: true,
-        ),
-      );
-    } catch (e) {
-      debugPrint('Biometric authentication error: \$e');
-      return false;
-    }
-  }
-}
-""";
+    final content = getBiometricAuthWizardTemplate();
 
     serviceFile.writeAsStringSync(content.trim(), mode: FileMode.write);
 
@@ -82,7 +41,7 @@ class BiometricAuthService {
   });
 
   printSuccess(
-    'Biometric Auth Service scaffolded: lib/core/services/biometric_auth_service.dart',
+    'Biometric Auth Service scaffolded successfully in active project!',
   );
   printInfo('👉 Registered in Dependency Injection (BiometricAuthService).');
   printWarning(

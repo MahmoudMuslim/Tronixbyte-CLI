@@ -1,10 +1,13 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> wireFeatureInjection(String namePascal) async {
-  final injectionFile = File('lib/injection.dart');
+  final activePath = getActiveProjectPath();
+  final injectionFile = File(p.join(activePath, 'lib', 'injection.dart'));
+
   if (!injectionFile.existsSync()) {
     printWarning(
-      'lib/injection.dart not found. Skipping automated injection wiring.',
+      'lib/injection.dart not found in the active project. Skipping automated injection wiring.',
     );
     return;
   }

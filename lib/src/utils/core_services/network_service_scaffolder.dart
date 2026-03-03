@@ -1,7 +1,10 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> scaffoldNetworkService() async {
   printSection('Network Service Scaffolder');
+
+  final activePath = getActiveProjectPath();
 
   await runCommand('flutter', [
     'pub',
@@ -12,7 +15,9 @@ Future<void> scaffoldNetworkService() async {
   await loadingSpinner(
     'Generating NetworkService and wiring injection',
     () async {
-      final serviceFile = File('lib/core/services/network_service.dart');
+      final serviceFile = File(
+        p.join(activePath, 'lib/core/services/network_service.dart'),
+      );
       if (!serviceFile.parent.existsSync()) {
         serviceFile.parent.createSync(recursive: true);
       }
@@ -42,5 +47,7 @@ class NetworkService {
     },
   );
 
-  printSuccess('NetworkService ready! Monitor connectivity reactively.');
+  printSuccess(
+    'NetworkService ready in active project! Monitor connectivity reactively.',
+  );
 }

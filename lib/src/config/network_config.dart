@@ -1,7 +1,10 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> configureNetwork(String projectName) async {
   printSection('Network & API Configuration');
+
+  final activePath = getActiveProjectPath();
 
   // 1. Ensure dependencies are present
   await loadingSpinner('Ensuring network dependencies', () async {
@@ -12,55 +15,61 @@ Future<void> configureNetwork(String projectName) async {
   await loadingSpinner(
     'Scaffolding network and error handling layers',
     () async {
-      final apiDir = Directory('lib/core/api');
+      final apiDir = Directory(p.join(activePath, 'lib', 'core', 'api'));
       if (!apiDir.existsSync()) apiDir.createSync(recursive: true);
 
-      final errorDir = Directory('lib/core/errors');
+      final errorDir = Directory(p.join(activePath, 'lib', 'core', 'errors'));
       if (!errorDir.existsSync()) errorDir.createSync(recursive: true);
 
-      final networkDir = Directory('lib/core/network');
+      final networkDir = Directory(
+        p.join(activePath, 'lib', 'core', 'network'),
+      );
       if (!networkDir.existsSync()) networkDir.createSync(recursive: true);
 
       // 1. Generate ApiClient (Dio)
-      final apiClientFile = File('lib/core/api/api_client.dart');
+      final apiClientFile = File(p.join(apiDir.path, 'api_client.dart'));
       apiClientFile.writeAsStringSync(getApiClientTemplate(projectName));
-      printInfo('Generated: lib/core/api/api_client.dart');
+      printInfo('Generated: ${apiClientFile.path}');
 
       // 2. Generate ApiService (Retrofit)
-      final apiServiceFile = File('lib/core/api/api_service.dart');
+      final apiServiceFile = File(p.join(apiDir.path, 'api_service.dart'));
       apiServiceFile.writeAsStringSync(getApiServiceTemplate(projectName));
-      printInfo('Generated: lib/core/api/api_service.dart');
+      printInfo('Generated: ${apiServiceFile.path}');
 
       // 3. Generate Failures
-      final failureFile = File('lib/core/errors/failures.dart');
+      final failureFile = File(p.join(errorDir.path, 'failures.dart'));
       failureFile.writeAsStringSync(getFailureTemplate(projectName));
-      printInfo('Generated: lib/core/errors/failures.dart');
+      printInfo('Generated: ${failureFile.path}');
 
       // 4. Generate Network Info
-      final networkInfoFile = File('lib/core/network/network_info.dart');
+      final networkInfoFile = File(
+        p.join(networkDir.path, 'network_info.dart'),
+      );
       networkInfoFile.writeAsStringSync(getNetworkInfoTemplate(projectName));
-      printInfo('Generated: lib/core/network/network_info.dart');
+      printInfo('Generated: ${networkInfoFile.path}');
 
       // Update barrel files
-      _updateBarrels();
+      _updateBarrels(activePath);
     },
   );
 
-  printSuccess('Network foundation configured successfully!');
+  printSuccess(
+    'Network foundation configured successfully in the active project!',
+  );
   printInfo(
     '👉 Includes: Dio Client, Retrofit Service, Functional Failures, and Connectivity Monitoring.',
   );
   printInfo('👉 Remember to run build_runner to generate the .g.dart files.');
 }
 
-void _updateBarrels() {
+void _updateBarrels(String activePath) {
   File(
-    'lib/core/api/z_api.dart',
+    p.join(activePath, 'lib', 'core', 'api', 'z_api.dart'),
   ).writeAsStringSync("export 'api_client.dart';\nexport 'api_service.dart';");
   File(
-    'lib/core/errors/z_errors.dart',
+    p.join(activePath, 'lib', 'core', 'errors', 'z_errors.dart'),
   ).writeAsStringSync("export 'failures.dart';");
   File(
-    'lib/core/network/z_network.dart',
+    p.join(activePath, 'lib', 'core', 'network', 'z_network.dart'),
   ).writeAsStringSync("export 'network_info.dart';");
 }

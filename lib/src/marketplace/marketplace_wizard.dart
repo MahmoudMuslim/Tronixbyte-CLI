@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runMarketplaceWizard() async {
@@ -29,6 +30,8 @@ Future<void> runMarketplaceWizard() async {
 Future<void> _installModule(MarketplaceModule module) async {
   printSection('Installing: ${module.name}');
 
+  final activePath = getActiveProjectPath();
+
   final confirm =
       (ask('Proceed with installation of "${module.name}"? (y/n)') ?? 'n')
           .toLowerCase() ==
@@ -38,6 +41,7 @@ Future<void> _installModule(MarketplaceModule module) async {
   await loadingSpinner('Scaffolding module "${module.name}"', () async {
     // 1. Add Dependencies
     if (module.dependencies.isNotEmpty) {
+      // runCommand internally uses getActiveProjectPath()
       await runCommand('flutter', ['pub', 'add', ...module.dependencies]);
     }
     if (module.devDependencies.isNotEmpty) {
@@ -50,17 +54,20 @@ Future<void> _installModule(MarketplaceModule module) async {
     }
 
     // 2. Write Files
-    module.files.forEach((path, content) {
-      final file = File(path);
+    module.files.forEach((relativePath, content) {
+      final absoluteFilePath = p.join(activePath, relativePath);
+      final file = File(absoluteFilePath);
       if (!file.parent.existsSync()) file.parent.createSync(recursive: true);
       file.writeAsStringSync('${content.trim()}\n');
-      printInfo('Created: $path');
+      printInfo('Created: $relativePath');
     });
 
     // 3. Auto-sync project
     await syncProject();
   });
 
-  printSuccess('Module "${module.name}" installed successfully!');
+  printSuccess(
+    'Module "${module.name}" installed successfully in active project!',
+  );
   printInfo('👉 Tip: Check the generated files and customize them as needed.');
 }

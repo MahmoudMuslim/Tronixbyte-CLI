@@ -1,8 +1,16 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> wireFirebaseInjection(String pubspec) async {
-  final injectionFile = File('lib/injection.dart');
-  if (!injectionFile.existsSync()) return;
+  final activePath = getActiveProjectPath();
+  final injectionFile = File(p.join(activePath, 'lib', 'injection.dart'));
+
+  if (!injectionFile.existsSync()) {
+    printWarning(
+      'lib/injection.dart not found in $activePath. Skipping Firebase wiring.',
+    );
+    return;
+  }
 
   printInfo('Wiring Firebase Elite Suite into lib/injection.dart...');
   String content = injectionFile.readAsStringSync();
@@ -59,15 +67,18 @@ Future<void> wireFirebaseInjection(String pubspec) async {
   );
 
   if (injections.isNotEmpty && !content.contains('FirebaseAuth.instance')) {
-    await loadingSpinner('Injecting Firebase services', () async {
-      final injectionBlock =
-          "\n  // --- Firebase & Cloud Services ---\n${injections.join('\n')}";
-      content = content.replaceFirst(
-        '// --- Core ---',
-        '// --- Core ---$injectionBlock',
-      );
-      injectionFile.writeAsStringSync(content);
-    });
+    await loadingSpinner(
+      'Injecting Firebase services into $activePath',
+      () async {
+        final injectionBlock =
+            "\n  // --- Firebase & Cloud Services ---\n${injections.join('\n')}";
+        content = content.replaceFirst(
+          '// --- Core ---',
+          '// --- Core ---$injectionBlock',
+        );
+        injectionFile.writeAsStringSync(content);
+      },
+    );
     printSuccess('Firebase injection wiring complete.');
   }
 }

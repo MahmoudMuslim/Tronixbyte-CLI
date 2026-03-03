@@ -1,10 +1,16 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> syncTranslations() async {
   printSection('Localization Sync Tool');
-  final l10nDir = Directory('assets/translations');
+
+  final activePath = getActiveProjectPath();
+  final l10nDir = Directory(p.join(activePath, 'assets', 'translations'));
+
   if (!l10nDir.existsSync()) {
-    printError('assets/translations directory not found.');
+    printError(
+      'assets/translations directory not found in the active project at ${l10nDir.path}.',
+    );
     return;
   }
 
@@ -15,7 +21,7 @@ Future<void> syncTranslations() async {
       .toList();
 
   if (files.length < 2) {
-    printInfo('Not enough translation files to sync.');
+    printInfo('Not enough translation files to sync in $activePath.');
     return;
   }
 
@@ -29,12 +35,10 @@ Future<void> syncTranslations() async {
   }
   masterFile ??= files.first;
 
-  printInfo(
-    'Using ${masterFile.path.split(Platform.pathSeparator).last} as source of truth.',
-  );
+  printInfo('Using ${p.basename(masterFile.path)} as source of truth.');
 
   await loadingSpinner(
-    'Synchronizing translation keys across all locales',
+    'Synchronizing translation keys across all locales in $activePath',
     () async {
       try {
         final Map<String, dynamic> masterData = json.decode(
@@ -42,7 +46,7 @@ Future<void> syncTranslations() async {
         );
 
         for (final file in files) {
-          if (file.path == masterFile.path) continue;
+          if (file.path == masterFile!.path) continue;
 
           final Map<String, dynamic> targetData = json.decode(
             file.readAsStringSync(),
@@ -52,35 +56,24 @@ Future<void> syncTranslations() async {
           // Add missing keys
           for (final key in masterData.keys) {
             if (!targetData.containsKey(key)) {
-              targetData[key] = "TODO: ${masterData[key]}";
+              targetData[key] = "TODO: \${masterData[key]}";
               updated = true;
             }
-          }
-
-          // Optional: Remove extra keys that aren't in master
-          final extraKeys = targetData.keys
-              .where((k) => !masterData.containsKey(k))
-              .toList();
-
-          if (extraKeys.isNotEmpty) {
-            // We can't ask inside loadingSpinner without breaking the UI flow
-            // So we either skip or handle it before/after
-            // For now, let's just keep the keys to be safe during automated sync
           }
 
           if (updated) {
             const encoder = JsonEncoder.withIndent('  ');
             file.writeAsStringSync(encoder.convert(targetData));
-            printInfo(
-              'Updated ${file.path.split(Platform.pathSeparator).last}',
-            );
+            printInfo('Updated \${p.basename(file.path)}');
           }
         }
       } catch (e) {
-        throw Exception('Error during sync: $e');
+        throw Exception('Error during sync: \$e');
       }
     },
   );
 
-  printSuccess('All translation files are now synchronized.');
+  printSuccess(
+    'All translation files are now synchronized in the active project.',
+  );
 }

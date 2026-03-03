@@ -1,9 +1,14 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> scaffoldPermissionService() async {
   printSection('Permission Service Scaffolder');
 
-  final servicePath = 'lib/core/services/permission_service.dart';
+  final activePath = getActiveProjectPath();
+  final servicePath = p.join(
+    activePath,
+    'lib/core/services/permission_service.dart',
+  );
 
   if (File(servicePath).existsSync()) {
     printWarning('Permission Service already exists at $servicePath');
@@ -17,7 +22,7 @@ Future<void> scaffoldPermissionService() async {
   ], loadingMessage: 'Adding permission_handler dependency');
 
   await loadingSpinner(
-    'Generating PermissionService and wiring injection',
+    'Generating PermissionService and wiring injection in $activePath',
     () async {
       final content = '''
 import 'package:permission_handler/permission_handler.dart';
@@ -74,7 +79,7 @@ class PermissionService {
     },
   );
 
-  printSuccess('PermissionService ready!');
+  printSuccess('PermissionService ready in active project!');
   printInfo(
     'Use via "sl<PermissionService>().requestPermission(Permission.camera)".',
   );

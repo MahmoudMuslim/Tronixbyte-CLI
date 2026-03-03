@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> generateFeature(
@@ -12,8 +13,9 @@ Future<void> generateFeature(
   bool overwrite = false,
 }) async {
   final projectName = await getProjectName();
+  final activePath = getActiveProjectPath();
   final namePascal = name[0].toUpperCase() + name.substring(1);
-  final featurePath = 'lib/features/$name';
+  final featurePath = p.join(activePath, 'lib', 'features', name);
 
   String logicDir;
   String logicClass;
@@ -68,20 +70,20 @@ Future<void> generateFeature(
   }
 
   final dirs = <String>[
-    '$featurePath/manager',
+    p.join(featurePath, 'manager'),
     if (needData) ...[
-      '$featurePath/data/datasources',
-      '$featurePath/data/models',
-      '$featurePath/data/repositories',
+      p.join(featurePath, 'data', 'datasources'),
+      p.join(featurePath, 'data', 'models'),
+      p.join(featurePath, 'data', 'repositories'),
     ],
     if (needDomain) ...[
-      '$featurePath/domain/entities',
-      '$featurePath/domain/usecases',
-      '$featurePath/domain/repositories',
+      p.join(featurePath, 'domain', 'entities'),
+      p.join(featurePath, 'domain', 'usecases'),
+      p.join(featurePath, 'domain', 'repositories'),
     ],
     if (needPresentation) ...[
-      '$featurePath/presentation/screens',
-      '$featurePath/presentation/widgets',
+      p.join(featurePath, 'presentation', 'screens'),
+      p.join(featurePath, 'presentation', 'widgets'),
     ],
   ];
 
@@ -95,88 +97,89 @@ Future<void> generateFeature(
   printInfo('Generating files and barrel exports...');
   final files = <String, String>{
     // Logic
-    '$featurePath/manager/${name}_${logicDir == 'controller' ? 'controller' : (logicDir == 'provider' ? 'provider' : (logicDir == 'bloc' ? 'bloc' : 'cubit'))}.dart':
-        logicTemplate,
+    p.join(
+      featurePath,
+      'manager',
+      '${name}_${logicDir == 'controller' ? 'controller' : (logicDir == 'provider' ? 'provider' : (logicDir == 'bloc' ? 'bloc' : 'cubit'))}.dart',
+    ): logicTemplate,
     if (type == 'bloc')
-      '$featurePath/manager/${name}_event.dart': eventTemplate,
-    '$featurePath/manager/${name}_state.dart': stateTemplate,
-    '$featurePath/manager/z_$logicDir.dart':
-        "export '${name}_${logicDir == 'controller' ? 'controller' : (logicDir == 'provider' ? 'provider' : (logicDir == 'bloc' ? 'bloc' : 'cubit'))}.dart';",
+      p.join(featurePath, 'manager', '${name}_event.dart'): eventTemplate,
+    p.join(featurePath, 'manager', '${name}_state.dart'): stateTemplate,
+    p.join(
+      featurePath,
+      'manager',
+      'z_$logicDir.dart',
+    ): "export '${name}_${logicDir == 'controller' ? 'controller' : (logicDir == 'provider' ? 'provider' : (logicDir == 'bloc' ? 'bloc' : 'cubit'))}.dart';",
 
     // Data layer
     if (needData) ...{
-      '$featurePath/data/datasources/${name}_datasource.dart':
+      p.join(featurePath, 'data', 'datasources', '${name}_datasource.dart'):
           getDataSourceTemplate(projectName, namePascal),
-      '$featurePath/data/datasources/z_datasources.dart':
+      p.join(featurePath, 'data', 'datasources', 'z_datasources.dart'):
           "export '${name}_datasource.dart';",
-      '$featurePath/data/models/${name}_model.dart': getModelTemplate(
-        projectName,
-        name,
-        namePascal,
-        fields,
-      ),
+      p.join(featurePath, 'data', 'models', '${name}_model.dart'):
+          getModelTemplate(projectName, name, namePascal, fields),
       if (needDomain)
-        '$featurePath/data/models/${name}_mapper.dart': getMapperTemplate(
-          projectName,
-          namePascal,
-          fields,
-        ),
-      '$featurePath/data/models/z_models.dart': needDomain
+        p.join(featurePath, 'data', 'models', '${name}_mapper.dart'):
+            getMapperTemplate(projectName, namePascal, fields),
+      p.join(featurePath, 'data', 'models', 'z_models.dart'): needDomain
           ? "export '${name}_model.dart';\nexport '${name}_mapper.dart';"
           : "export '${name}_model.dart';",
-      '$featurePath/data/repositories/${name}_repository_impl.dart':
-          getRepositoryImplTemplate(projectName, namePascal),
-      '$featurePath/data/repositories/z_repositories.dart':
+      p.join(
+        featurePath,
+        'data',
+        'repositories',
+        '${name}_repository_impl.dart',
+      ): getRepositoryImplTemplate(
+        projectName,
+        namePascal,
+      ),
+      p.join(featurePath, 'data', 'repositories', 'z_repositories.dart'):
           "export '${name}_repository_impl.dart';",
-      '$featurePath/data/z_data.dart':
-          "export 'datasources/z_datasources.dart';\nexport 'models/z_models.dart';\nexport 'repositories/z_repositories.dart';",
+      p.join(
+        featurePath,
+        'data',
+        'z_data.dart',
+      ): "export 'datasources/z_datasources.dart';\nexport 'models/z_models.dart';\nexport 'repositories/z_repositories.dart';",
     },
 
     // Domain layer
     if (needDomain) ...{
-      '$featurePath/domain/entities/${name}_entity.dart': getEntityTemplate(
-        projectName,
-        name,
-        namePascal,
-        fields,
-      ),
-      '$featurePath/domain/entities/z_entities.dart':
+      p.join(featurePath, 'domain', 'entities', '${name}_entity.dart'):
+          getEntityTemplate(projectName, name, namePascal, fields),
+      p.join(featurePath, 'domain', 'entities', 'z_entities.dart'):
           "export '${name}_entity.dart';",
-      '$featurePath/domain/usecases/${name}_usecase.dart': getUseCaseTemplate(
-        projectName,
-        namePascal,
-      ),
-      '$featurePath/domain/usecases/z_usecases.dart':
+      p.join(featurePath, 'domain', 'usecases', '${name}_usecase.dart'):
+          getUseCaseTemplate(projectName, namePascal),
+      p.join(featurePath, 'domain', 'usecases', 'z_usecases.dart'):
           "export '${name}_usecase.dart';",
-      '$featurePath/domain/repositories/${name}_repository.dart':
+      p.join(featurePath, 'domain', 'repositories', '${name}_repository.dart'):
           getRepositoryTemplate(projectName, namePascal),
-      '$featurePath/domain/repositories/z_repositories.dart':
+      p.join(featurePath, 'domain', 'repositories', 'z_repositories.dart'):
           "export '${name}_repository.dart';",
-      '$featurePath/domain/z_domain.dart':
-          "export 'entities/z_entities.dart';\nexport 'usecases/z_usecases.dart';\nexport 'repositories/z_repositories.dart';",
+      p.join(
+        featurePath,
+        'domain',
+        'z_domain.dart',
+      ): "export 'entities/z_entities.dart';\nexport 'usecases/z_usecases.dart';\nexport 'repositories/z_repositories.dart';",
     },
 
     // Presentation Layer
     if (needPresentation) ...{
-      '$featurePath/presentation/screens/${name}_screen.dart':
+      p.join(featurePath, 'presentation', 'screens', '${name}_screen.dart'):
           getScreenTemplate(projectName, namePascal, logicClass, type),
-      '$featurePath/presentation/screens/z_screens.dart':
+      p.join(featurePath, 'presentation', 'screens', 'z_screens.dart'):
           "export '${name}_screen.dart';",
-      '$featurePath/presentation/widgets/${name}_body.dart': getBodyTemplate(
-        projectName,
-        name,
-        namePascal,
-        logicClass,
-        type,
-      ),
-      '$featurePath/presentation/widgets/z_widgets.dart':
+      p.join(featurePath, 'presentation', 'widgets', '${name}_body.dart'):
+          getBodyTemplate(projectName, name, namePascal, logicClass, type),
+      p.join(featurePath, 'presentation', 'widgets', 'z_widgets.dart'):
           "export '${name}_body.dart';",
-      '$featurePath/presentation/z_presentation.dart':
+      p.join(featurePath, 'presentation', 'z_presentation.dart'):
           "export 'screens/z_screens.dart';\nexport 'widgets/z_widgets.dart';",
     },
 
     // Injection
-    '$featurePath/${name}_injection.dart': getFeatureInjectionTemplate(
+    p.join(featurePath, '${name}_injection.dart'): getFeatureInjectionTemplate(
       projectName,
       namePascal,
       logicClass,
@@ -186,7 +189,7 @@ Future<void> generateFeature(
     ),
 
     // Feature Barrel
-    '$featurePath/z_$name.dart': [
+    p.join(featurePath, 'z_$name.dart'): [
       "export '${name}_injection.dart';",
       "export 'manager/z_$logicDir.dart';",
       if (needData) "export 'data/z_data.dart';",
@@ -220,13 +223,15 @@ Future<void> generateFeature(
   await wireFeatureInjection(namePascal);
 
   // Update Features Barrel
-  await _updateFeaturesBarrel(name);
+  await _updateFeaturesBarrel(name, activePath);
 
   printSuccess('Feature $name created and wired successfully!');
 }
 
-Future<void> _updateFeaturesBarrel(String name) async {
-  final barrelFile = File('lib/features/z_features.dart');
+Future<void> _updateFeaturesBarrel(String name, String activePath) async {
+  final barrelFile = File(
+    p.join(activePath, 'lib', 'features', 'z_features.dart'),
+  );
   final exportLine = "export '$name/z_$name.dart';";
 
   if (!barrelFile.existsSync()) {
@@ -236,7 +241,7 @@ Future<void> _updateFeaturesBarrel(String name) async {
     if (!content.contains(exportLine)) {
       barrelFile.writeAsStringSync(
         '$content$exportLine\n',
-        mode: FileMode.append,
+        mode: FileMode.write,
       );
     }
   }
@@ -249,7 +254,8 @@ Future<void> _generateFeatureTests(
   String type,
   bool needPresentation,
 ) async {
-  final testPath = 'test/features/$name';
+  final activePath = getActiveProjectPath();
+  final testPath = p.join(activePath, 'test', 'features', name);
   if (!Directory(testPath).existsSync()) {
     Directory(testPath).createSync(recursive: true);
   }
@@ -275,14 +281,14 @@ Future<void> _generateFeatureTests(
       logicTestContent = getCubitTestTemplate(projectName, namePascal);
   }
 
-  final testFile = File('$testPath/${name}_${type}_test.dart');
+  final testFile = File(p.join(testPath, '${name}_${type}_test.dart'));
   if (!testFile.existsSync()) {
     testFile.writeAsStringSync(logicTestContent, mode: FileMode.append);
     printSuccess('Generated: $testPath/${name}_${type}_test.dart');
   }
 
   if (needPresentation) {
-    final widgetTestFile = File('$testPath/${name}_screen_test.dart');
+    final widgetTestFile = File(p.join(testPath, '${name}_screen_test.dart'));
     if (!widgetTestFile.existsSync()) {
       widgetTestFile.writeAsStringSync(
         getWidgetTestTemplate(projectName, namePascal),

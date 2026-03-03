@@ -1,18 +1,29 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> promptGenerateFeature() async {
   printSection('New Feature Wizard');
 
+  final activePath = getActiveProjectPath();
   final name = ask('Feature Name (e.g., auth)');
   if (name == null || name.isEmpty) return;
 
-  final options = ['BLoC', 'Cubit', 'Riverpod', 'GetX', 'Provider'];
-  print('\n$blue$bold🏗️  Select State Management Type:$reset');
-  for (var i = 0; i < options.length; i++) {
-    print(' $cyan${i + 1}:$reset ${options[i]}');
+  // Check if feature already exists
+  final featurePath = p.join(activePath, 'lib', 'features', name);
+  bool overwrite = false;
+  if (Directory(featurePath).existsSync()) {
+    printWarning('Feature "$name" already exists at $featurePath');
+    overwrite =
+        (ask('Overwrite existing files? (y/n)') ?? 'n').toLowerCase() == 'y';
+    if (!overwrite) return;
   }
 
-  final typeChoice = ask('Select type (1-${options.length})');
+  final options = ['BLoC', 'Cubit', 'Riverpod', 'GetX', 'Provider'];
+  final typeChoice = selectOption(
+    'Select State Management Type',
+    options,
+    showBack: false,
+  );
 
   String type;
   switch (typeChoice) {
@@ -79,5 +90,6 @@ Future<void> promptGenerateFeature() async {
     needPresentation: needPresentation,
     needRoute: needRoute,
     needTests: needTests,
+    overwrite: overwrite,
   );
 }

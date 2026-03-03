@@ -4,9 +4,11 @@ import 'package:tools/tools.dart';
 Future<void> runMonorepoDependencyGraph() async {
   printSection('📦 Multi-Repo Dependency Graph');
 
-  final packagesDir = Directory('packages');
+  final activePath = getActiveProjectPath();
+  final packagesDir = Directory(p.join(activePath, 'packages'));
+
   if (!packagesDir.existsSync()) {
-    printError('No "packages/" directory found.');
+    printError('No "packages/" directory found at ${packagesDir.path}.');
     return;
   }
 
@@ -21,31 +23,34 @@ Future<void> runMonorepoDependencyGraph() async {
       .whereType<Directory>()
       .toList();
 
-  await loadingSpinner('Analyzing internal package dependencies', () async {
-    for (final pkgDir in packages) {
-      final pubspecFile = File(p.join(pkgDir.path, 'pubspec.yaml'));
-      if (!pubspecFile.existsSync()) continue;
+  await loadingSpinner(
+    'Analyzing internal package dependencies in $activePath',
+    () async {
+      for (final pkgDir in packages) {
+        final pubspecFile = File(p.join(pkgDir.path, 'pubspec.yaml'));
+        if (!pubspecFile.existsSync()) continue;
 
-      final pkgName = p.basename(pkgDir.path);
-      final content = pubspecFile.readAsStringSync();
+        final pkgName = p.basename(pkgDir.path);
+        final content = pubspecFile.readAsStringSync();
 
-      // Look for path dependencies:
-      // name:
-      //   path: ../other_pkg
-      final pathDepRegex = RegExp(
-        r'^\s+(\w+):\s*\n\s+path:\s+\.\./(\w+)',
-        multiLine: true,
-      );
-      final matches = pathDepRegex.allMatches(content);
+        // Look for path dependencies:
+        // name:
+        //   path: ../other_pkg
+        final pathDepRegex = RegExp(
+          r'^\s+(\w+):\s*\n\s+path:\s+\.\./(\w+)',
+          multiLine: true,
+        );
+        final matches = pathDepRegex.allMatches(content);
 
-      for (final match in matches) {
-        final depName = match.group(1);
-        if (depName != null) {
-          connections.add('  "$pkgName" -> "$depName";');
+        for (final match in matches) {
+          final depName = match.group(1);
+          if (depName != null) {
+            connections.add('  "$pkgName" -> "$depName";');
+          }
         }
       }
-    }
-  });
+    },
+  );
 
   if (connections.isEmpty) {
     printInfo('No internal dependencies found between packages.');
@@ -57,12 +62,15 @@ Future<void> runMonorepoDependencyGraph() async {
 
   dotBuffer.writeln('}');
 
-  final dotFile = File('MONOREPO_ARCHITECTURE.dot');
+  final dotFileName = 'MONOREPO_ARCHITECTURE.dot';
+  final dotFile = File(p.join(activePath, dotFileName));
   dotFile.writeAsStringSync(dotBuffer.toString(), mode: FileMode.write);
 
-  printSuccess('Graphviz DOT file generated: MONOREPO_ARCHITECTURE.dot');
+  printSuccess(
+    'Graphviz DOT file generated: $dotFileName at active project root.',
+  );
   printInfo(
-    '👉 To visualize, use: "dot -Tpng MONOREPO_ARCHITECTURE.dot -o MONOREPO_ARCHITECTURE.png"',
+    '👉 To visualize, use: "dot -Tpng $dotFileName -o MONOREPO_ARCHITECTURE.png"',
   );
 
   final render =
@@ -70,9 +78,10 @@ Future<void> runMonorepoDependencyGraph() async {
           .toLowerCase() ==
       'y';
   if (render) {
+    // runCommand uses getActiveProjectPath() internally
     await runCommand('dot', [
       '-Tpng',
-      'MONOREPO_ARCHITECTURE.dot',
+      dotFileName,
       '-o',
       'MONOREPO_ARCHITECTURE.png',
     ], loadingMessage: 'Rendering Graph');

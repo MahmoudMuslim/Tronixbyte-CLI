@@ -3,9 +3,14 @@ import 'package:tools/tools.dart';
 
 Future<void> detectCircularDependencies() async {
   printSection('Circular Dependency Detector');
-  final featuresDir = Directory('lib/features');
+
+  final activePath = getActiveProjectPath();
+  final featuresDir = Directory(p.join(activePath, 'lib', 'features'));
+
   if (!featuresDir.existsSync()) {
-    printWarning('lib/features directory not found. Skipping check.');
+    printWarning(
+      'lib/features directory not found in the active project. Skipping check.',
+    );
     return;
   }
 
@@ -19,7 +24,7 @@ Future<void> detectCircularDependencies() async {
   bool hasCycle = false;
 
   await loadingSpinner(
-    'Building feature dependency map and detecting cycles',
+    'Building feature dependency map and detecting cycles in $activePath',
     () async {
       // 1. Build Dependency Map
       for (final feature in features) {

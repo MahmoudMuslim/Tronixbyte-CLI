@@ -6,7 +6,7 @@ Future<void> manageFirebaseServices() async {
   final List<String> toAdd = [];
   bool authEnabled = false;
 
-  // Use centralized firebaseServices from utils.dart
+  // Use centralized firebaseServices from project_constants.dart (via utils.dart)
   firebaseServices.forEach((key, desc) {
     final add = (ask('Add $key ($desc)? (y/n)') ?? 'n').toLowerCase() == 'y';
     if (add) {
@@ -48,13 +48,14 @@ Future<void> manageFirebaseServices() async {
     // Include firebaseBaseDeps (firebase_core) as the mandatory foundation
     final uniquePackages = {...firebaseBaseDeps, ...toAdd}.toList();
 
+    // runCommand uses getActiveProjectPath() internally
     await runCommand('flutter', [
       'pub',
       'add',
       ...uniquePackages,
     ], loadingMessage: 'Installing selected Firebase packages');
 
-    // Auto-trigger scaffolding to make services workable
+    // Auto-trigger scaffolding to make services workable in the active project
     await scaffoldFirebaseIntegration(enabledProviders: authProviders);
 
     printSuccess('Firebase services installed and integrated successfully!');

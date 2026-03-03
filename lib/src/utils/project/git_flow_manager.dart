@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runGitFlowManager() async {
@@ -41,12 +42,14 @@ Future<void> runGitFlowManager() async {
 }
 
 Future<void> _checkBranchNaming() async {
-  await loadingSpinner('Checking branch name', () async {
+  final activePath = getActiveProjectPath();
+  await loadingSpinner('Checking branch name in $activePath', () async {
     final result = await Process.run('git', [
       'rev-parse',
       '--abbrev-ref',
       'HEAD',
-    ]);
+    ], workingDirectory: activePath);
+
     if (result.exitCode != 0) {
       printError('Git error: ${result.stderr}');
       return;
@@ -77,8 +80,11 @@ Future<void> _checkBranchNaming() async {
 Future<void> _initBranchNamingHook() async {
   printSection('Branch Naming Hook Installer');
 
-  if (!Directory('.git').existsSync()) {
-    printError('.git directory not found.');
+  final activePath = getActiveProjectPath();
+  final gitDir = Directory(p.join(activePath, '.git'));
+
+  if (!gitDir.existsSync()) {
+    printError('.git directory not found in $activePath.');
     return;
   }
 
@@ -93,24 +99,32 @@ if ! echo "$local_branch_name" | grep -Eq "^($valid_prefixes)"; then
 fi
 ''';
 
-  await loadingSpinner('Installing branch naming hook', () async {
-    final hookFile = File('.git/hooks/pre-push');
-    if (!hookFile.parent.existsSync()) {
-      hookFile.parent.createSync(recursive: true);
-    }
-    hookFile.writeAsStringSync(hookContent.trim(), mode: FileMode.write);
+  await loadingSpinner(
+    'Installing branch naming hook in $activePath',
+    () async {
+      final hookFile = File(p.join(gitDir.path, 'hooks', 'pre-push'));
+      if (!hookFile.parent.existsSync()) {
+        hookFile.parent.createSync(recursive: true);
+      }
+      hookFile.writeAsStringSync(hookContent.trim(), mode: FileMode.write);
 
-    if (!Platform.isWindows) {
-      await Process.run('chmod', ['+x', '.git/hooks/pre-push']);
-    }
-  });
+      if (!Platform.isWindows) {
+        await Process.run('chmod', ['+x', hookFile.path]);
+      }
+    },
+  );
 
-  printSuccess('Branch naming hook installed to .git/hooks/pre-push');
+  printSuccess(
+    'Branch naming hook installed to ${p.relative(p.join(gitDir.path, 'hooks', 'pre-push'), from: activePath)}',
+  );
 }
 
 Future<void> _generatePrTemplate() async {
-  await loadingSpinner('Generating PULL_REQUEST_TEMPLATE.md', () async {
-    final template = """
+  final activePath = getActiveProjectPath();
+  await loadingSpinner(
+    'Generating PULL_REQUEST_TEMPLATE.md in $activePath',
+    () async {
+      final template = """
 ## Description
 <!-- Describe your changes in detail -->
 
@@ -131,42 +145,48 @@ Future<void> _generatePrTemplate() async {
 - [ ] New and existing unit tests pass locally with my changes
 """;
 
-    final githubDir = Directory('.github');
-    if (!githubDir.existsSync()) githubDir.createSync();
+      final githubDir = Directory(p.join(activePath, '.github'));
+      if (!githubDir.existsSync()) githubDir.createSync(recursive: true);
 
-    File(
-      '.github/PULL_REQUEST_TEMPLATE.md',
-    ).writeAsStringSync(template.trim(), mode: FileMode.write);
-  });
+      File(
+        p.join(githubDir.path, 'PULL_REQUEST_TEMPLATE.md'),
+      ).writeAsStringSync(template.trim(), mode: FileMode.write);
+    },
+  );
 
   printSuccess('Generated: .github/PULL_REQUEST_TEMPLATE.md');
 }
 
 Future<void> _generateGitChangelog() async {
-  await loadingSpinner('Generating changelog from git history', () async {
-    final result = await Process.run('git', [
-      'log',
-      '--oneline',
-      '--pretty=format:%s',
-    ]);
-    if (result.exitCode != 0) {
-      printError('Git error: ${result.stderr}');
-      return;
-    }
+  final activePath = getActiveProjectPath();
+  await loadingSpinner(
+    'Generating changelog from git history in $activePath',
+    () async {
+      final result = await Process.run('git', [
+        'log',
+        '--oneline',
+        '--pretty=format:%s',
+      ], workingDirectory: activePath);
 
-    final commits = result.stdout.toString().split('\n');
-    final buffer = StringBuffer();
-    buffer.writeln('# Changelog (Automated from Git)\n');
+      if (result.exitCode != 0) {
+        printError('Git error: ${result.stderr}');
+        return;
+      }
 
-    for (final commit in commits) {
-      if (commit.trim().isEmpty) continue;
-      buffer.writeln('- $commit');
-    }
+      final commits = result.stdout.toString().split('\n');
+      final buffer = StringBuffer();
+      buffer.writeln('# Changelog (Automated from Git)\n');
 
-    File(
-      'GIT_CHANGELOG.md',
-    ).writeAsStringSync(buffer.toString(), mode: FileMode.write);
-  });
+      for (final commit in commits) {
+        if (commit.trim().isEmpty) continue;
+        buffer.writeln('- $commit');
+      }
+
+      File(
+        p.join(activePath, 'GIT_CHANGELOG.md'),
+      ).writeAsStringSync(buffer.toString(), mode: FileMode.write);
+    },
+  );
 
   printSuccess('Generated: GIT_CHANGELOG.md');
 }

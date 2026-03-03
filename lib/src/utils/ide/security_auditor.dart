@@ -4,6 +4,7 @@ import 'package:tools/tools.dart';
 Future<void> runSecurityAudit() async {
   printSection('Deep Security Audit (OWASP Standards)');
 
+  final activePath = getActiveProjectPath();
   int issues = 0;
   final List<Map<String, dynamic>> hardcodedSecrets = [];
   final List<String> findings = [];
@@ -22,9 +23,9 @@ Future<void> runSecurityAudit() async {
     if (data != null) hardcodedSecrets.add(data);
   }
 
-  await loadingSpinner('Performing deep security scan', () async {
+  await loadingSpinner('Performing deep security scan in $activePath', () async {
     // 1. .env in .gitignore
-    final gitignore = File('.gitignore');
+    final gitignore = File(p.join(activePath, '.gitignore'));
     if (gitignore.existsSync()) {
       final content = gitignore.readAsStringSync();
       if (!content.contains('.env')) {
@@ -38,7 +39,7 @@ Future<void> runSecurityAudit() async {
       caseSensitive: false,
     );
 
-    final libDir = Directory('lib');
+    final libDir = Directory(p.join(activePath, 'lib'));
     if (libDir.existsSync()) {
       final files = libDir
           .listSync(recursive: true)
@@ -59,7 +60,7 @@ Future<void> runSecurityAudit() async {
             final value = match.group(2)!;
             reportIssue(
               'WARNING',
-              'Potential hardcoded secret in ${p.relative(file.path)}:${i + 1}',
+              'Potential hardcoded secret in ${p.relative(file.path, from: activePath)}:\${i + 1}',
               data: {
                 'file': file,
                 'lineIndex': i,
@@ -77,7 +78,7 @@ Future<void> runSecurityAudit() async {
               content.toLowerCase().contains('secret')) {
             reportIssue(
               'WARNING',
-              'Insecure storage detected in ${p.relative(file.path)}: SharedPreferences used for sensitive data. Use FlutterSecureStorage instead.',
+              'Insecure storage detected in ${p.relative(file.path, from: activePath)}: SharedPreferences used for sensitive data. Use FlutterSecureStorage instead.',
             );
           }
         }
@@ -88,7 +89,7 @@ Future<void> runSecurityAudit() async {
               !content.contains('onHttpClientCreate')) {
             reportIssue(
               'INFO',
-              'Network client (Dio) found in ${p.relative(file.path)} without explicit SSL Pinning. Consider implementing Certificate Pinning for production.',
+              'Network client (Dio) found in ${p.relative(file.path, from: activePath)} without explicit SSL Pinning. Consider implementing Certificate Pinning for production.',
             );
           }
         }
@@ -96,7 +97,9 @@ Future<void> runSecurityAudit() async {
     }
 
     // 5. Android Cleartext & Proguard (OWASP M7)
-    final manifest = File('android/app/src/main/AndroidManifest.xml');
+    final manifest = File(
+      p.join(activePath, 'android/app/src/main/AndroidManifest.xml'),
+    );
     if (manifest.existsSync()) {
       final content = manifest.readAsStringSync();
       if (content.contains('android:usesCleartextTraffic="true"')) {
@@ -107,7 +110,7 @@ Future<void> runSecurityAudit() async {
       }
     }
 
-    final proguard = File('android/app/proguard-rules.pro');
+    final proguard = File(p.join(activePath, 'android/app/proguard-rules.pro'));
     if (proguard.existsSync()) {
       final content = proguard.readAsStringSync();
       if (content.contains('-keep class **') && !content.contains('#')) {
@@ -133,7 +136,7 @@ Future<void> runSecurityAudit() async {
     if (hardcodedSecrets.isNotEmpty) {
       print('\n$cyan$bold🛠️  SECRET EXTRACTION AVAILABLE:$reset');
       final fix =
-          (ask('Extract ${hardcodedSecrets.length} secrets to .env? (y/n)') ??
+          (ask('Extract \${hardcodedSecrets.length} secrets to .env? (y/n)') ??
                   'n')
               .toLowerCase() ==
           'y';
@@ -148,15 +151,15 @@ Future<void> runSecurityAudit() async {
               '_',
             );
             final envKey =
-                '${keyHint}_${DateTime.now().millisecondsSinceEpoch % 1000}';
+                '\${keyHint}_\${DateTime.now().millisecondsSinceEpoch % 1000}';
 
             final envFiles = ['.env.dev', '.env.stg', '.env.prod', '.env'];
             for (final envName in envFiles) {
-              final envFile = File(envName);
+              final envFile = File(p.join(activePath, envName));
               if (envFile.existsSync()) {
                 final c = envFile.readAsStringSync();
                 envFile.writeAsStringSync(
-                  '$c\n$envKey=$value',
+                  '\$c\n\$envKey=\$value',
                   mode: FileMode.write,
                 );
               }
@@ -164,12 +167,12 @@ Future<void> runSecurityAudit() async {
 
             final lines = file.readAsLinesSync();
             lines[lineIndex] = lines[lineIndex].replaceFirst(
-              '"$value"',
-              "dotenv.env['$envKey'] ?? ''",
+              '"\$value"',
+              "dotenv.env['\$envKey'] ?? ''",
             );
             lines[lineIndex] = lines[lineIndex].replaceFirst(
-              "'$value'",
-              "dotenv.env['$envKey'] ?? ''",
+              "'\$value'",
+              "dotenv.env['\$envKey'] ?? ''",
             );
             if (!lines.any((l) => l.contains('flutter_dotenv.dart'))) {
               lines.insert(
@@ -187,17 +190,19 @@ Future<void> runSecurityAudit() async {
 
   // Generate security report file
   if (findings.isNotEmpty) {
-    final reportFile = File('SECURITY_REPORT.md');
+    final reportFile = File(p.join(activePath, 'SECURITY_REPORT.md'));
     final buffer = StringBuffer();
     buffer.writeln('# 🛡️ Tronixbyte Security Audit Report');
-    buffer.writeln('\nGenerated on: ${DateTime.now()}\n');
+    buffer.writeln('\nGenerated on: \${DateTime.now()}\n');
     buffer.writeln('## 📊 Summary');
-    buffer.writeln('- Total Issues: $issues');
+    buffer.writeln('- Total Issues: \$issues');
     buffer.writeln('\n## 🔍 Detailed Findings');
     for (var f in findings) {
-      buffer.writeln('- $f');
+      buffer.writeln('- \$f');
     }
     reportFile.writeAsStringSync(buffer.toString(), mode: FileMode.write);
-    printInfo('Full security report generated: SECURITY_REPORT.md');
+    printInfo(
+      'Full security report generated in active project: SECURITY_REPORT.md',
+    );
   }
 }

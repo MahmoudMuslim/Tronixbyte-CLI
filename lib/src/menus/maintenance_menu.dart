@@ -1,4 +1,5 @@
 import 'package:tools/tools.dart';
+import 'package:path/path.dart' as p;
 
 Future<void> maintenanceMenu() async {
   while (true) {
@@ -195,6 +196,7 @@ Future<void> maintenanceMenu() async {
 }
 
 Future<void> _runDeepClean() async {
+  final activePath = getActiveProjectPath();
   final confirm =
       (ask(
                 'Run DEEP CLEAN? This will delete all .g.dart files and build artifacts. (y/n)',
@@ -204,8 +206,8 @@ Future<void> _runDeepClean() async {
       'y';
   if (!confirm) return;
 
-  printInfo('Running Deep Clean...');
-  final libDir = Directory('lib');
+  printInfo('Running Deep Clean in $activePath...');
+  final libDir = Directory(p.join(activePath, 'lib'));
   if (libDir.existsSync()) {
     final List<FileSystemEntity> entities = libDir.listSync(recursive: true);
     int deletedCount = 0;
@@ -218,6 +220,7 @@ Future<void> _runDeepClean() async {
     printSuccess('Deleted $deletedCount generated files.');
   }
 
+  // runCommand already uses workingDirectory: activePath
   await runCommand('flutter', ['clean']);
   printSuccess('Build artifacts purged.');
   printInfo(

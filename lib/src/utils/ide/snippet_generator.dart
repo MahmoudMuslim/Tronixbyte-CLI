@@ -1,7 +1,10 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> generateVsCodeSnippets() async {
   printSection('VS Code Snippet Generator');
+
+  final activePath = getActiveProjectPath();
 
   final snippets = {
     "Clean Feature Bloc": {
@@ -63,15 +66,18 @@ Future<void> generateVsCodeSnippets() async {
     },
   };
 
-  await loadingSpinner('Generating .vscode/tronixbyte.code-snippets', () async {
-    final vscodeDir = Directory('.vscode');
-    if (!vscodeDir.existsSync()) vscodeDir.createSync();
+  await loadingSpinner(
+    'Generating .vscode/tronixbyte.code-snippets in $activePath',
+    () async {
+      final vscodeDir = Directory(p.join(activePath, '.vscode'));
+      if (!vscodeDir.existsSync()) vscodeDir.createSync(recursive: true);
 
-    final file = File('.vscode/tronixbyte.code-snippets');
-    file.writeAsStringSync(
-      const JsonEncoder.withIndent('  ').convert(snippets),
-    );
-  });
+      final file = File(p.join(vscodeDir.path, 'tronixbyte.code-snippets'));
+      file.writeAsStringSync(
+        const JsonEncoder.withIndent('  ').convert(snippets),
+      );
+    },
+  );
 
   printSuccess('VS Code snippets generated successfully!');
   printInfo(

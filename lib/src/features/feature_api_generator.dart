@@ -1,11 +1,17 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> generateApiEndpoint() async {
   printSection('API Endpoint Generator');
 
-  final apiServiceFile = File('lib/core/api/api_service.dart');
+  final activePath = getActiveProjectPath();
+  final apiServiceFile = File(
+    p.join(activePath, 'lib', 'core', 'api', 'api_service.dart'),
+  );
+
   if (!apiServiceFile.existsSync()) {
-    printError('ApiService not found at lib/core/api/api_service.dart');
+    printError('ApiService not found at ${apiServiceFile.path}');
+    printInfo('Please ensure Network & API is configured first.');
     return;
   }
 
@@ -22,11 +28,10 @@ Future<void> generateApiEndpoint() async {
 
   await loadingSpinner('Adding endpoint to ApiService', () async {
     String content = apiServiceFile.readAsStringSync();
+
+    // Construct Retrofit annotation
     final methodSignature =
-        """
-  @$method('$path')
-  Future<$responseModel> $name();
-""";
+        "\n  @$method('$path')\n  Future<$responseModel> $name();\n";
 
     if (!content.contains('Future<$responseModel> $name()')) {
       final lastBraceIndex = content.lastIndexOf('}');

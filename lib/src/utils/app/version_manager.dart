@@ -1,9 +1,12 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> manageVersion() async {
-  final pubspecFile = File('pubspec.yaml');
+  final activePath = getActiveProjectPath();
+  final pubspecFile = File(p.join(activePath, 'pubspec.yaml'));
+
   if (!pubspecFile.existsSync()) {
-    printError('pubspec.yaml not found.');
+    printError('pubspec.yaml not found at ${pubspecFile.path}.');
     return;
   }
 
@@ -65,14 +68,17 @@ Future<void> manageVersion() async {
   if (updateBuild) build++;
   final finalVersion = '$newVersion+$build';
 
-  await loadingSpinner('Updating pubspec.yaml version', () async {
-    content = content.replaceFirst(
-      versionMatch.group(0)!,
-      'version: $finalVersion',
-    );
-    pubspecFile.writeAsStringSync(content);
-    _updateGlobalAppVersion(finalVersion);
-  });
+  await loadingSpinner(
+    'Updating pubspec.yaml version in $activePath',
+    () async {
+      content = content.replaceFirst(
+        versionMatch.group(0)!,
+        'version: $finalVersion',
+      );
+      pubspecFile.writeAsStringSync(content);
+      _updateGlobalAppVersion(finalVersion, activePath);
+    },
+  );
 
   printSuccess('Version updated to: $finalVersion');
 }
@@ -90,8 +96,10 @@ String incrementVersion(String version, int index) {
   return vParts.join('.');
 }
 
-void _updateGlobalAppVersion(String version) {
-  final file = File('lib/core/constants/app_constants.dart');
+void _updateGlobalAppVersion(String version, String activePath) {
+  final file = File(
+    p.join(activePath, 'lib/core/constants/app_constants.dart'),
+  );
   if (file.existsSync()) {
     String content = file.readAsStringSync();
     final versionRegex = RegExp(r"static const String appVersion = '[^']+';");
@@ -101,7 +109,7 @@ void _updateGlobalAppVersion(String version) {
         "static const String appVersion = '$version';",
       );
       file.writeAsStringSync(content);
-      printInfo('Updated appVersion in lib/core/constants/app_constants.dart');
+      printInfo('Updated appVersion in ${file.path}');
     }
   }
 }

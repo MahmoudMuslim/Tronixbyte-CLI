@@ -1,11 +1,18 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runApiMockServerGenerator() async {
   printSection('🛡️ Advanced API Mock Server');
 
-  final apiServiceFile = File('lib/core/api/api_service.dart');
+  final activePath = getActiveProjectPath();
+  final apiServiceFile = File(
+    p.join(activePath, 'lib', 'core', 'api', 'api_service.dart'),
+  );
+
   if (!apiServiceFile.existsSync()) {
-    printError('lib/core/api/api_service.dart not found. Scaffold API first.');
+    printError(
+      'lib/core/api/api_service.dart not found at ${apiServiceFile.path}. Scaffold API first.',
+    );
     return;
   }
 
@@ -70,14 +77,18 @@ ${routes.join('\n')}
 }
 """;
 
-      final mockServerFile = File('test/mock_server.dart');
+      final mockServerFile = File(
+        p.join(activePath, 'test', 'mock_server.dart'),
+      );
       if (!mockServerFile.parent.existsSync())
         mockServerFile.parent.createSync(recursive: true);
       mockServerFile.writeAsStringSync(serverContent.trim());
     },
   );
 
-  printSuccess('Mock server generated: test/mock_server.dart');
+  printSuccess(
+    'Mock server generated in active project: test/mock_server.dart',
+  );
   printInfo('👉 Run with: "dart test/mock_server.dart"');
   printWarning(
     '👉 Action Required: Add "shelf" and "shelf_router" to dev_dependencies.',

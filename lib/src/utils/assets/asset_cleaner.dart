@@ -4,15 +4,16 @@ import 'package:tools/tools.dart';
 Future<void> findUnusedAssets() async {
   printSection('Unused Asset Cleaner');
 
-  final assetsDir = Directory('assets');
+  final activePath = getActiveProjectPath();
+  final assetsDir = Directory(p.join(activePath, 'assets'));
   if (!assetsDir.existsSync()) {
-    printInfo('No assets directory found.');
+    printInfo('No assets directory found at ${assetsDir.path}.');
     return;
   }
 
-  final libDir = Directory('lib');
+  final libDir = Directory(p.join(activePath, 'lib'));
   if (!libDir.existsSync()) {
-    printError('lib directory not found.');
+    printError('lib directory not found at ${libDir.path}.');
     return;
   }
 
@@ -27,43 +28,49 @@ Future<void> findUnusedAssets() async {
     return;
   }
 
-  final List<String> unusedAssets = [];
+  final List<String> unusedAssetsPaths = [];
 
-  await loadingSpinner('Analyzing asset usage across lib/', () async {
-    final libFiles = libDir
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((f) => f.path.endsWith('.dart'))
-        .toList();
+  await loadingSpinner(
+    'Analyzing asset usage across lib/ in $activePath',
+    () async {
+      final libFiles = libDir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'))
+          .toList();
 
-    for (final asset in allAssets) {
-      final assetName = p.basename(asset.path);
-      final assetPath = p
-          .relative(asset.path, from: Directory.current.path)
-          .replaceAll('\\', '/');
+      for (final asset in allAssets) {
+        final assetName = p.basename(asset.path);
+        // We use the path relative to project root for string matching in code
+        final assetPath = p
+            .relative(asset.path, from: activePath)
+            .replaceAll('\\', '/');
 
-      bool isUsed = false;
-      for (final file in libFiles) {
-        final content = file.readAsStringSync();
-        // Check for filename or full path reference
-        if (content.contains(assetName) || content.contains(assetPath)) {
-          isUsed = true;
-          break;
+        bool isUsed = false;
+        for (final file in libFiles) {
+          final content = file.readAsStringSync();
+          // Check for filename or full path reference
+          if (content.contains(assetName) || content.contains(assetPath)) {
+            isUsed = true;
+            break;
+          }
+        }
+
+        if (!isUsed) {
+          unusedAssetsPaths.add(asset.path); // Store absolute path for deletion
         }
       }
+    },
+  );
 
-      if (!isUsed) {
-        unusedAssets.add(assetPath);
-      }
-    }
-  });
-
-  if (unusedAssets.isEmpty) {
+  if (unusedAssetsPaths.isEmpty) {
     printSuccess('Great job! All assets appear to be in use.');
   } else {
-    printWarning('Found ${unusedAssets.length} potentially unused assets:');
-    for (final asset in unusedAssets) {
-      print('      - $asset');
+    printWarning(
+      'Found ${unusedAssetsPaths.length} potentially unused assets:',
+    );
+    for (final assetAbsPath in unusedAssetsPaths) {
+      print('      - ${p.relative(assetAbsPath, from: activePath)}');
     }
 
     print(
@@ -76,11 +83,11 @@ Future<void> findUnusedAssets() async {
         'y';
     if (delete) {
       await loadingSpinner('Deleting unused files', () async {
-        for (final path in unusedAssets) {
+        for (final path in unusedAssetsPaths) {
           File(path).deleteSync();
         }
       });
-      printSuccess('Deleted ${unusedAssets.length} files.');
+      printSuccess('Deleted ${unusedAssetsPaths.length} files.');
     }
   }
 }

@@ -1,7 +1,9 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> configureNativeSplash() async {
   printSection('Native Splash Configuration');
+  final activePath = getActiveProjectPath();
   final fnsSb = StringBuffer();
 
   final color = ask('Background Color (e.g., "#ffffff")');
@@ -34,7 +36,8 @@ Future<void> configureNativeSplash() async {
     }
 
     await loadingSpinner('Generating splash screen configurations', () async {
-      File('flutter_native_splash.yaml').writeAsStringSync(fnsSb.toString());
+      final configFile = File(p.join(activePath, 'flutter_native_splash.yaml'));
+      configFile.writeAsStringSync(fnsSb.toString());
 
       printInfo('Running flutter_native_splash:create...');
       await runCommand('dart', ['run', 'flutter_native_splash:create']);

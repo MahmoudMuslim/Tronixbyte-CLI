@@ -25,8 +25,9 @@ Future<void> promptRenameFeature() async {
 Future<void> renameFeature(String oldName, String newName) async {
   final oldPascal = oldName[0].toUpperCase() + oldName.substring(1);
   final newPascal = newName[0].toUpperCase() + newName.substring(1);
-  final oldPath = 'lib/features/$oldName';
-  final newPath = 'lib/features/$newName';
+  final activePath = getActiveProjectPath();
+  final oldPath = p.join(activePath, 'lib', 'features', oldName);
+  final newPath = p.join(activePath, 'lib', 'features', newName);
 
   if (!Directory(oldPath).existsSync()) {
     printError('Feature "$oldName" not found at $oldPath');
@@ -64,7 +65,7 @@ Future<void> renameFeature(String oldName, String newName) async {
     printInfo('Renamed directory to: $newPath');
 
     // 3. Update lib/injection.dart
-    final injectionFile = File('lib/injection.dart');
+    final injectionFile = File(p.join(activePath, 'lib', 'injection.dart'));
     if (injectionFile.existsSync()) {
       String content = injectionFile.readAsStringSync();
       content = content.replaceAll(
@@ -72,16 +73,18 @@ Future<void> renameFeature(String oldName, String newName) async {
         'init${newPascal}Injection',
       );
       injectionFile.writeAsStringSync(content);
-      printInfo('Updated lib/injection.dart');
+      printInfo('Updated ${injectionFile.path}');
     }
 
     // 4. Update lib/features/z_features.dart
-    final barrelFile = File('lib/features/z_features.dart');
+    final barrelFile = File(
+      p.join(activePath, 'lib', 'features', 'z_features.dart'),
+    );
     if (barrelFile.existsSync()) {
       String content = barrelFile.readAsStringSync();
       content = content.replaceAll(oldName, newName);
       barrelFile.writeAsStringSync(content);
-      printInfo('Updated lib/features/z_features.dart');
+      printInfo('Updated ${barrelFile.path}');
     }
   });
 

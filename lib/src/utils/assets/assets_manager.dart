@@ -1,4 +1,5 @@
 import 'package:tools/tools.dart';
+import 'package:path/path.dart' as p;
 
 Future<void> manageAssets() async {
   while (true) {
@@ -31,6 +32,7 @@ Future<void> manageAssets() async {
 }
 
 Future<void> _initAssetsStructure() async {
+  final activePath = getActiveProjectPath();
   final folders = [
     'assets/images',
     'assets/fonts',
@@ -41,7 +43,7 @@ Future<void> _initAssetsStructure() async {
 
   await loadingSpinner('Initializing asset infrastructure', () async {
     for (final folder in folders) {
-      final dir = Directory(folder);
+      final dir = Directory(p.join(activePath, folder));
       if (!dir.existsSync()) {
         dir.createSync(recursive: true);
         printInfo('Created: $folder');

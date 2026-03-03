@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 class MetricsSnapshot {
@@ -28,7 +29,8 @@ class MetricsSnapshot {
 Future<void> runGrowthForecaster() async {
   printSection('📈 Project Growth Forecaster');
 
-  final logFile = File('.tronix_growth_log.json');
+  final activePath = getActiveProjectPath();
+  final logFile = File(p.join(activePath, '.tronix_growth_log.json'));
   List<MetricsSnapshot> history = [];
 
   if (logFile.existsSync()) {
@@ -42,28 +44,31 @@ Future<void> runGrowthForecaster() async {
   int currentLoc = 0;
   int currentAssets = 0;
 
-  await loadingSpinner('Capturing current project metrics', () async {
-    // LOC check (simplified)
-    final libDir = Directory('lib');
-    if (libDir.existsSync()) {
-      final files = libDir
-          .listSync(recursive: true)
-          .whereType<File>()
-          .where((f) => f.path.endsWith('.dart'));
-      for (final file in files) {
-        currentLoc += file.readAsLinesSync().length;
+  await loadingSpinner(
+    'Capturing current project metrics in $activePath',
+    () async {
+      // LOC check
+      final libDir = Directory(p.join(activePath, 'lib'));
+      if (libDir.existsSync()) {
+        final files = libDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.dart'));
+        for (final file in files) {
+          currentLoc += file.readAsLinesSync().length;
+        }
       }
-    }
 
-    // Asset check
-    final assetsDir = Directory('assets');
-    if (assetsDir.existsSync()) {
-      currentAssets = assetsDir
-          .listSync(recursive: true)
-          .whereType<File>()
-          .length;
-    }
-  });
+      // Asset check
+      final assetsDir = Directory(p.join(activePath, 'assets'));
+      if (assetsDir.existsSync()) {
+        currentAssets = assetsDir
+            .listSync(recursive: true)
+            .whereType<File>()
+            .length;
+      }
+    },
+  );
 
   // 2. Save Snapshot
   final now = DateTime.now();
@@ -83,7 +88,9 @@ Future<void> runGrowthForecaster() async {
 
   if (history.length < 2) {
     printInfo('Current Stats: $currentLoc LOC, $currentAssets Assets.');
-    printWarning('Need at least 2 days of history to forecast trends.');
+    printWarning(
+      'Need at least 2 days of history to forecast trends for this project.',
+    );
     return;
   }
 
@@ -122,12 +129,15 @@ Future<void> runGrowthForecaster() async {
   );
 
   print('\n$cyan$bold📊 SCALE VISUALIZATION$reset');
-  final maxLoc = loc30Days > 0 ? loc30Days : 1;
-  print(
-    '   [Now]       : ${'█' * ((currentLoc / maxLoc) * 40).toInt()} $currentLoc',
-  );
-  print('   [30 Days]   : ${'█' * 40} $loc30Days (Projected)');
+  final maxLoc = loc30Days > currentLoc
+      ? loc30Days
+      : (currentLoc > 0 ? currentLoc : 1);
+  final currentBarLength = ((currentLoc / maxLoc) * 40).toInt().clamp(1, 40);
+  final projectedBarLength = ((loc30Days / maxLoc) * 40).toInt().clamp(1, 40);
 
-  printSuccess('Forecasting complete!');
+  print('   [Now]       : ${'█' * currentBarLength} $currentLoc');
+  print('   [30 Days]   : ${'█' * projectedBarLength} $loc30Days (Projected)');
+
+  printSuccess('Forecasting complete for the active project!');
   ask('Press Enter to return');
 }

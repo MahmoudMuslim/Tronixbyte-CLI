@@ -1,8 +1,10 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> shorebirdPatchWizard(String platform) async {
   printSection('Shorebird Patch Wizard: ${platform.toUpperCase()}');
 
+  final activePath = getActiveProjectPath();
   final List<String> args = ['patch', platform];
 
   final useEnv =
@@ -10,11 +12,16 @@ Future<void> shorebirdPatchWizard(String platform) async {
   if (useEnv) {
     final envType = (ask('Which env file? (dev/stg/prod)') ?? 'dev')
         .toLowerCase();
-    final envPath = '.env.$envType';
+    final envFileName = '.env.$envType';
+    final envPath = p.join(activePath, envFileName);
+
     if (File(envPath).existsSync()) {
-      args.add('--dart-define-from-file=$envPath');
+      // Note: shorebird command might expect the relative path from the project root
+      args.add('--dart-define-from-file=$envFileName');
     } else {
-      printWarning('$envPath not found. Proceeding without specific env file.');
+      printWarning(
+        '$envFileName not found in project root. Proceeding without specific env file.',
+      );
     }
   }
 
@@ -29,11 +36,14 @@ Future<void> shorebirdPatchWizard(String platform) async {
   final dryRun = (ask('Dry run? (y/n)') ?? 'n').toLowerCase() == 'y';
   if (dryRun) args.add('--dry-run');
 
+  // runCommand uses getActiveProjectPath() as workingDirectory internally
   await runCommand(
     'shorebird',
     args,
     loadingMessage: 'Pushing $platform patch to Shorebird',
   );
 
-  printSuccess('Shorebird patch process completed for $platform.');
+  printSuccess(
+    'Shorebird patch process completed for $platform in $activePath.',
+  );
 }

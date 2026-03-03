@@ -4,10 +4,12 @@ import 'package:tools/tools.dart';
 Future<void> checkArchitecture() async {
   printSection('Clean Architecture Linter');
 
-  final featuresDir = Directory('lib/features');
+  final activePath = getActiveProjectPath();
+  final featuresDir = Directory(p.join(activePath, 'lib', 'features'));
+
   if (!featuresDir.existsSync()) {
     printWarning(
-      'lib/features directory not found. Skipping architecture check.',
+      'lib/features directory not found in the active project. Skipping architecture check.',
     );
     return;
   }
@@ -18,13 +20,13 @@ Future<void> checkArchitecture() async {
   void reportSmell(
     String feature,
     String layer,
-    String file,
+    String filePath,
     String message, {
     String? offendingLine,
     File? fileObj,
   }) {
     print('   $red$bold🚨 [Smell] $feature -> $layer:$reset $message');
-    print('      ${cyan}File:$reset $file');
+    print('      ${cyan}File:$reset ${p.relative(filePath, from: activePath)}');
     if (offendingLine != null) {
       print('      ${yellow}Line:$reset ${offendingLine.trim()}');
     }
@@ -42,7 +44,7 @@ Future<void> checkArchitecture() async {
   final features = featuresDir.listSync().whereType<Directory>();
 
   await loadingSpinner(
-    'Analyzing architectural layers for decoupling',
+    'Analyzing architectural layers for decoupling in $activePath',
     () async {
       for (final feature in features) {
         final name = p.basename(feature.path);
@@ -64,7 +66,7 @@ Future<void> checkArchitecture() async {
                   reportSmell(
                     name,
                     'Domain',
-                    p.relative(file.path),
+                    file.path,
                     'Illegal dependency on Data or Presentation layer.',
                     offendingLine: line,
                     fileObj: file,
@@ -90,7 +92,7 @@ Future<void> checkArchitecture() async {
                   reportSmell(
                     name,
                     'Presentation',
-                    p.relative(file.path),
+                    file.path,
                     'Direct dependency on Data layer detected.',
                     offendingLine: line,
                     fileObj: file,
@@ -113,7 +115,7 @@ Future<void> checkArchitecture() async {
               reportSmell(
                 name,
                 'Domain',
-                p.relative(file.path),
+                file.path,
                 'Domain layer should use Entities, not Models.',
               );
             }

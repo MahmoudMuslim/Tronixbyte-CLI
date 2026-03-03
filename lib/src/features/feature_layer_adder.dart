@@ -1,24 +1,26 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> promptAddFeatureLayer() async {
   printSection('Feature Layer Adder');
 
+  final activePath = getActiveProjectPath();
   final name = ask('Feature Name to enhance (e.g., auth)');
   if (name == null || name.isEmpty) return;
 
-  final featurePath = 'lib/features/$name';
+  final featurePath = p.join(activePath, 'lib', 'features', name);
   if (!Directory(featurePath).existsSync()) {
-    printError('Feature "$name" does not exist.');
+    printError('Feature "$name" does not exist at $featurePath');
     return;
   }
 
   // Determine current logic type
   String type = 'cubit';
-  if (Directory('$featurePath/bloc').existsSync()) {
+  if (Directory(p.join(featurePath, 'bloc')).existsSync()) {
     type = 'bloc';
-  } else if (Directory('$featurePath/controller').existsSync()) {
+  } else if (Directory(p.join(featurePath, 'controller')).existsSync()) {
     type = 'getx';
-  } else if (Directory('$featurePath/provider').existsSync()) {
+  } else if (Directory(p.join(featurePath, 'provider')).existsSync()) {
     final stateChoice = selectOption(
       'Logic folder found: /provider/. Select State Management type:',
       ['Riverpod', 'Provider'],

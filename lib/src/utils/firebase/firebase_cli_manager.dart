@@ -48,6 +48,7 @@ Future<void> installNpm() async {
       );
     }
   } else if (Platform.isLinux) {
+    // Note: runCommand uses getActiveProjectPath() as workingDirectory
     await runCommand('sudo', ['apt', 'update'], loadingMessage: 'Updating apt');
     await runCommand('sudo', [
       'apt',
@@ -85,12 +86,15 @@ Future<void> installFirebaseTools() async {
 
 Future<void> setupFlutterFire() async {
   printSection('FlutterFire CLI Setup');
+
+  // runCommand already uses workingDirectory: getActiveProjectPath()
   await runCommand('dart', [
     'pub',
     'global',
     'activate',
     'flutterfire_cli',
   ], loadingMessage: 'Activating flutterfire_cli');
+
   printInfo('Running flutterfire configure...');
   await runCommand('flutterfire', ['configure']);
   printSuccess('FlutterFire CLI configured successfully.');

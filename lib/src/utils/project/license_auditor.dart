@@ -1,11 +1,16 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runLicenseAudit() async {
   printSection('🛡️ Dependency License Auditor');
 
-  final pubspecLock = File('pubspec.lock');
+  final activePath = getActiveProjectPath();
+  final pubspecLock = File(p.join(activePath, 'pubspec.lock'));
+
   if (!pubspecLock.existsSync()) {
-    printError('pubspec.lock not found. Run "flutter pub get" first.');
+    printError(
+      'pubspec.lock not found at \${pubspecLock.path}. Run "flutter pub get" first.',
+    );
     return;
   }
 
@@ -13,7 +18,7 @@ Future<void> runLicenseAudit() async {
   final List<String> licenses = [];
 
   await loadingSpinner(
-    'Scanning dependencies and fetching license info',
+    'Scanning dependencies and fetching license info in $activePath',
     () async {
       final content = pubspecLock.readAsStringSync();
 
@@ -39,7 +44,8 @@ Future<void> runLicenseAudit() async {
   final buffer = StringBuffer();
   buffer.writeln('# 📜 Open Source Licenses');
   buffer.writeln(
-    '\nGenerated on: ${DateTime.now().toString().split(' ')[0]}\n',
+    '\nGenerated on: \${DateTime.now().toString().split('
+    ')[0]}\n',
   );
   buffer.writeln(
     'This project uses $dependenciesFound third-party dependencies.\n',
@@ -49,10 +55,12 @@ Future<void> runLicenseAudit() async {
     buffer.writeln(license);
   }
 
-  final filePath = 'OSS_LICENSES.md';
+  final filePath = p.join(activePath, 'OSS_LICENSES.md');
   File(filePath).writeAsStringSync(buffer.toString(), mode: FileMode.write);
 
-  printSuccess('License audit complete. Generated: $filePath');
+  printSuccess(
+    'License audit complete. Generated: OSS_LICENSES.md at active project root.',
+  );
   printInfo('Found $dependenciesFound dependencies.');
 
   ask('Press Enter to return');

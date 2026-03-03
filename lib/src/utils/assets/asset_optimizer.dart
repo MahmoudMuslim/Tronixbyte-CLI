@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
@@ -7,9 +6,10 @@ import 'package:tools/tools.dart';
 Future<void> optimizeProjectAssets() async {
   printSection('Smart Asset Optimizer');
 
-  final assetsDir = Directory('assets');
+  final activePath = getActiveProjectPath();
+  final assetsDir = Directory(p.join(activePath, 'assets'));
   if (!assetsDir.existsSync()) {
-    printInfo('No assets directory found.');
+    printInfo('No assets directory found at ${assetsDir.path}.');
     return;
   }
 
@@ -21,7 +21,7 @@ Future<void> optimizeProjectAssets() async {
   }).toList();
 
   if (images.isEmpty) {
-    printSuccess('No PNG or JPG images found to optimize.');
+    printSuccess('No PNG or JPG images found to optimize in $activePath.');
     return;
   }
 
@@ -30,7 +30,7 @@ Future<void> optimizeProjectAssets() async {
   int optimizedCount = 0;
   int totalSaved = 0;
 
-  await loadingSpinner('Optimizing assets', () async {
+  await loadingSpinner('Optimizing assets in $activePath', () async {
     for (final imageFile in images) {
       final Uint8List bytes = imageFile.readAsBytesSync();
       final int originalSize = bytes.length;
@@ -56,7 +56,7 @@ Future<void> optimizeProjectAssets() async {
         optimizedCount++;
         totalSaved += (originalSize - newSize);
         printInfo(
-          'Optimized: ${p.basename(imageFile.path)} (${(originalSize / 1024).toStringAsFixed(1)}KB -> ${(newSize / 1024).toStringAsFixed(1)}KB)',
+          'Optimized: ${p.relative(imageFile.path, from: activePath)} (${(originalSize / 1024).toStringAsFixed(1)}KB -> ${(newSize / 1024).toStringAsFixed(1)}KB)',
         );
       }
     }

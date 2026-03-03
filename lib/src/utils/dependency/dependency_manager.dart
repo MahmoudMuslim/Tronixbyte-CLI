@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> manageDependencies() async {
@@ -36,6 +37,7 @@ Future<void> manageDependencies() async {
         await syncGlobalExports();
         break;
       case '6':
+        // runCommand uses getActiveProjectPath() internally
         await runCommand('flutter', ['pub', 'outdated']);
         break;
       case '7':
@@ -96,14 +98,16 @@ Future<void> _upgradeDependencies() async {
 }
 
 Future<void> syncGlobalExports() async {
-  final pubspec = File('pubspec.yaml');
+  final activePath = getActiveProjectPath();
+  final pubspec = File(p.join(activePath, 'pubspec.yaml'));
+
   if (!pubspec.existsSync()) {
-    printError('pubspec.yaml not found.');
+    printError('pubspec.yaml not found at ${pubspec.path}.');
     return;
   }
 
   await loadingSpinner(
-    'Syncing lib/src/global.dart with pubspec.yaml',
+    'Syncing lib/src/global.dart with pubspec.yaml in $activePath',
     () async {
       final content = pubspec.readAsStringSync();
       final lines = content.split(RegExp(r'\r?\n'));
@@ -119,7 +123,6 @@ Future<void> syncGlobalExports() async {
         }
 
         if (inDeps) {
-          // If line is not indented, we are out of dependencies section
           if (line.isNotEmpty &&
               !line.startsWith(' ') &&
               !line.startsWith('#')) {
@@ -127,7 +130,6 @@ Future<void> syncGlobalExports() async {
             continue;
           }
 
-          // Top-level dependencies are indented by 2 spaces exactly
           if (line.startsWith('  ') && !line.startsWith('   ')) {
             final trimmed = line.trim();
             if (trimmed.isEmpty || trimmed.startsWith('#')) continue;
@@ -157,7 +159,7 @@ Future<void> syncGlobalExports() async {
         buffer.writeln("export 'package:$pkg/$pkg.dart';");
       }
 
-      final globalFile = File('lib/src/global.dart');
+      final globalFile = File(p.join(activePath, 'lib', 'src', 'global.dart'));
       if (!globalFile.parent.existsSync()) {
         globalFile.parent.createSync(recursive: true);
       }
@@ -165,5 +167,5 @@ Future<void> syncGlobalExports() async {
     },
   );
 
-  printSuccess('lib/src/global.dart updated successfully.');
+  printSuccess('lib/src/global.dart updated successfully in active project.');
 }

@@ -1,20 +1,26 @@
-import 'dart:async';
-
 import 'package:tools/tools.dart';
 
 void main(List<String> args) async {
   runZonedGuarded(
     () async {
-      // Shortcut handling
+      // 1. Initial Shortcut & CLI Argument Handling
       if (args.length >= 2) {
+        // Direct Feature Generation: tools <name> <type>
         await ensureProjectRoot();
         await generateFeature(args[0].toLowerCase(), args[1].toLowerCase());
         return;
       }
 
       if (args.length == 1) {
-        await ensureProjectRoot();
         final cmd = args[0].toLowerCase();
+
+        if (cmd == 'help') {
+          _printHelp();
+          return;
+        }
+
+        // Project-specific shortcuts require a context
+        await ensureProjectRoot();
         switch (cmd) {
           case 'sync':
             await syncProject();
@@ -39,21 +45,23 @@ void main(List<String> args) async {
           case 'quality':
             await runCodeQualityTools();
             return;
-          case 'help':
+          default:
+            printError('Unknown command: $cmd');
             _printHelp();
             return;
         }
       }
 
+      // 2. Main Interactive Loop
       while (true) {
         final options = [
           'Create New Project (Flutter/Dart)',
           'Manage Existing Project (Clean Architecture Tools)',
-          'Shortcuts & Help',
+          'CLI Shortcuts & Documentation',
           'Exit',
         ];
 
-        // selectOption already clears the console and prints the banner
+        // selectOption handles banner and screen clearing
         final choice = selectOption('Main Menu', options, showBack: false);
 
         switch (choice) {
@@ -68,7 +76,7 @@ void main(List<String> args) async {
             break;
           case '4':
             print('\n$green$bold👋 Goodbye from Tronixbyte CLI!$reset\n');
-            return;
+            exit(0);
           case null:
             break;
           default:
@@ -90,19 +98,26 @@ void main(List<String> args) async {
 
 void _printHelp() {
   printSection('Tronixbyte CLI Shortcuts');
+  printInfo('Global command: "tools" (compiled .exe)');
+  print('');
+
   printTable(
-    ['Command', 'Description'],
+    ['Shortcut', 'Action / Description'],
     [
-      ['dart bin/tools.dart <name> <type>', 'Generate a new feature'],
-      ['dart bin/tools.dart sync', 'Full project sync'],
-      ['dart bin/tools.dart repair', 'Deep project repair'],
-      ['dart bin/tools.dart doctor', 'Project health diagnosis'],
-      ['dart bin/tools.dart stats', 'Show project statistics'],
-      ['dart bin/tools.dart audit', 'Security & performance audits'],
-      ['dart bin/tools.dart clean', 'Flutter clean & get'],
-      ['dart bin/tools.dart quality', 'Run code quality suite'],
-      ['dart bin/tools.dart help', 'Show this help message'],
+      ['tools <name> <type>', 'Generate a new Clean Arch feature'],
+      ['tools sync', 'Synchronize dependencies, barrels, & code-gen'],
+      ['tools repair', 'Nuclear architectural fix and re-wiring'],
+      ['tools doctor', 'Deep health diagnosis and structural check'],
+      ['tools stats', 'Real-time project complexity & LOC stats'],
+      ['tools audit', 'Security, performance, & leak analysis'],
+      ['tools clean', 'Project deep-clean and dependency refresh'],
+      ['tools quality', 'Run formatting, analysis, and test suite'],
+      ['tools help', 'Show this documentation'],
     ],
   );
-  ask('Press Enter to return to Main Menu');
+
+  print(
+    '\n$yellow$bold💡 PRO TIP:$reset Run these commands from any project subdirectory.',
+  );
+  ask('Press Enter to return');
 }

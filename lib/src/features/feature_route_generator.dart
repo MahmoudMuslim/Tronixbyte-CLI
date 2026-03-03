@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> generateFeatureRoute(
@@ -7,19 +8,20 @@ Future<void> generateFeatureRoute(
 ) async {
   printSection('Feature Route Registration');
 
-  final routesDir = Directory('lib/core/routes');
+  final activePath = getActiveProjectPath();
+  final routesDir = Directory(p.join(activePath, 'lib', 'core', 'routes'));
   if (!routesDir.existsSync()) {
     routesDir.createSync(recursive: true);
   }
 
-  final routerFile = File('lib/core/routes/router.dart');
+  final routerFile = File(p.join(routesDir.path, 'router.dart'));
 
   await loadingSpinner('Registering $namePascal route in GoRouter', () async {
     // If router.dart doesn't exist, create it from template first
     if (!routerFile.existsSync()) {
       printInfo('Initial router.dart not found. Creating it from template...');
       routerFile.writeAsStringSync(getRouterTemplate(projectName));
-      printSuccess('Created: lib/core/routes/router.dart');
+      printSuccess('Created: ${routerFile.path}');
     }
 
     var content = routerFile.readAsStringSync();
@@ -47,6 +49,6 @@ Future<void> generateFeatureRoute(
   });
 
   printSuccess(
-    'Route "$namePascal" registered in lib/core/routes/router.dart successfully!',
+    'Route "$namePascal" registered in ${routerFile.path} successfully!',
   );
 }

@@ -1,23 +1,40 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> generateSmartMapper() async {
   printSection('Smart Model-to-Entity Mapper Generator');
 
+  final activePath = getActiveProjectPath();
   final featureName = ask('Enter the feature name (e.g., auth)');
   if (featureName == null) return;
 
-  final entityPath =
-      'lib/features/$featureName/domain/entities/${featureName}_entity.dart';
-  final modelPath =
-      'lib/features/$featureName/data/models/${featureName}_model.dart';
-  final mapperPath =
-      'lib/features/$featureName/data/models/${featureName}_mapper.dart';
+  final featureDir = p.join(activePath, 'lib', 'features', featureName);
+  final entityPath = p.join(
+    featureDir,
+    'domain',
+    'entities',
+    '${featureName}_entity.dart',
+  );
+  final modelPath = p.join(
+    featureDir,
+    'data',
+    'models',
+    '${featureName}_model.dart',
+  );
+  final mapperPath = p.join(
+    featureDir,
+    'data',
+    'models',
+    '${featureName}_mapper.dart',
+  );
 
   final entityFile = File(entityPath);
   final modelFile = File(modelPath);
 
   if (!entityFile.existsSync() || !modelFile.existsSync()) {
-    printError('Could not find Entity or Model for feature: $featureName');
+    printError(
+      'Could not find Entity or Model for feature: $featureName at $featureDir',
+    );
     return;
   }
 
@@ -45,7 +62,7 @@ Future<void> generateSmartMapper() async {
     File(mapperPath).writeAsStringSync(mapperTemplate);
 
     // Update Data Barrel
-    _updateDataBarrel(featureName);
+    _updateDataBarrel(featureName, activePath);
 
     printInfo('Mappings for: ${fields.map((f) => f['name']).join(', ')}');
   });
@@ -53,8 +70,18 @@ Future<void> generateSmartMapper() async {
   printSuccess('Mapper generated successfully: $mapperPath');
 }
 
-void _updateDataBarrel(String feature) {
-  final barrelFile = File('lib/features/$feature/data/models/z_models.dart');
+void _updateDataBarrel(String feature, String activePath) {
+  final barrelFile = File(
+    p.join(
+      activePath,
+      'lib',
+      'features',
+      feature,
+      'data',
+      'models',
+      'z_models.dart',
+    ),
+  );
   final exportLine = "export '${feature}_mapper.dart';\n";
 
   if (barrelFile.existsSync()) {

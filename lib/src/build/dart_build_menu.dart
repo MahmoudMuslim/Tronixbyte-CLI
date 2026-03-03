@@ -1,6 +1,9 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> dartBuildMenu() async {
+  final activePath = getActiveProjectPath();
+
   while (true) {
     final options = [
       'Build CLI Application (dart build cli)',
@@ -29,14 +32,16 @@ Future<void> dartBuildMenu() async {
       continue;
     }
 
-    final entryFile =
-        ask('Entry file path (default: bin/main.dart or lib/main.dart)') ??
-        (File('bin/main.dart').existsSync()
-            ? 'bin/main.dart'
-            : 'lib/main.dart');
+    final defaultEntry =
+        File(p.join(activePath, 'bin', 'main.dart')).existsSync()
+        ? 'bin/main.dart'
+        : 'lib/main.dart';
 
-    if (!File(entryFile).existsSync()) {
-      printError('Entry file not found at $entryFile');
+    final entryFile =
+        ask('Entry file path (default: $defaultEntry)') ?? defaultEntry;
+
+    if (!File(p.join(activePath, entryFile)).existsSync()) {
+      printError('Entry file not found at ${p.join(activePath, entryFile)}');
       continue;
     }
 

@@ -4,9 +4,10 @@ import 'package:tools/tools.dart';
 Future<void> runDesignSystemAudit() async {
   printSection('🛡️ Design System Auditor');
 
-  final libDir = Directory('lib');
+  final activePath = getActiveProjectPath();
+  final libDir = Directory(p.join(activePath, 'lib'));
   if (!libDir.existsSync()) {
-    printError('lib directory not found.');
+    printError('lib directory not found at ${libDir.path}');
     return;
   }
 
@@ -17,7 +18,7 @@ Future<void> runDesignSystemAudit() async {
   final colorRegex = RegExp(r'(Colors\.[a-z]+|Color\(0x[0-9a-fA-F]{8}\))');
 
   await loadingSpinner(
-    'Auditing UI components for Design System consistency',
+    'Auditing UI components for Design System consistency in $activePath',
     () async {
       final files = libDir
           .listSync(recursive: true)
@@ -38,7 +39,7 @@ Future<void> runDesignSystemAudit() async {
 
           final match = colorRegex.firstMatch(line);
           if (match != null) {
-            final relPath = p.relative(file.path, from: Directory.current.path);
+            final relPath = p.relative(file.path, from: activePath);
             findings.add(
               '⚠️ Hardcoded color "${match.group(0)}" in $relPath:${i + 1}',
             );

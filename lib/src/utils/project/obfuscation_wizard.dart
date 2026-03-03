@@ -37,10 +37,17 @@ Future<void> runObfuscationWizard() async {
 }
 
 Future<void> _configureProguard() async {
-  final proguardFile = File('android/app/proguard-rules.pro');
+  final activePath = getActiveProjectPath();
+  final proguardFile = File(
+    p.join(activePath, 'android/app/proguard-rules.pro'),
+  );
+
   if (!proguardFile.existsSync()) {
-    printInfo('Creating android/app/proguard-rules.pro...');
-    proguardFile.createSync(recursive: true);
+    printInfo('Creating android/app/proguard-rules.pro in $activePath...');
+    if (!proguardFile.parent.existsSync()) {
+      proguardFile.parent.createSync(recursive: true);
+    }
+    proguardFile.createSync();
   }
 
   printInfo('Current Proguard Rules:');
@@ -79,7 +86,7 @@ Future<void> _configureProguard() async {
   }
 
   if (rule.isNotEmpty) {
-    await loadingSpinner('Updating Proguard rules', () async {
+    await loadingSpinner('Updating Proguard rules in $activePath', () async {
       final current = proguardFile.readAsStringSync();
       proguardFile.writeAsStringSync('$current\n$rule\n', mode: FileMode.write);
     });
@@ -88,7 +95,8 @@ Future<void> _configureProguard() async {
 }
 
 Future<void> _configureIosSymbolStripping() async {
-  printInfo('Configuring iOS Symbol Stripping...');
+  final activePath = getActiveProjectPath();
+  printInfo('Configuring iOS Symbol Stripping for project at $activePath...');
   printInfo(
     'This modification will be applied to your project\'s build configuration.',
   );
@@ -110,47 +118,65 @@ Future<void> _configureIosSymbolStripping() async {
 }
 
 Future<void> _backupMappingFiles() async {
-  final backupDir = Directory('obfuscation_backups');
-  if (!backupDir.existsSync()) backupDir.createSync();
+  final activePath = getActiveProjectPath();
+  final backupDir = Directory(p.join(activePath, 'obfuscation_backups'));
+  if (!backupDir.existsSync()) backupDir.createSync(recursive: true);
 
-  await loadingSpinner('Backing up obfuscation mapping files', () async {
-    final mappingFiles = Directory('build')
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((f) => f.path.contains('mapping.txt'));
+  final buildDir = Directory(p.join(activePath, 'build'));
+  if (!buildDir.existsSync()) {
+    printWarning('Build directory not found. Run a build first.');
+    return;
+  }
 
-    for (final file in mappingFiles) {
-      final dest = p.join(
-        backupDir.path,
-        '${DateTime.now().millisecondsSinceEpoch}_${p.basename(file.path)}',
-      );
-      file.copySync(dest);
-      printInfo('Backed up: ${p.relative(file.path)}');
-    }
-  });
+  await loadingSpinner(
+    'Backing up obfuscation mapping files in $activePath',
+    () async {
+      final mappingFiles = buildDir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.contains('mapping.txt'));
 
-  printSuccess('Backups complete in obfuscation_backups/');
+      for (final file in mappingFiles) {
+        final dest = p.join(
+          backupDir.path,
+          '${DateTime.now().millisecondsSinceEpoch}_${p.basename(file.path)}',
+        );
+        file.copySync(dest);
+        printInfo('Backed up: ${p.relative(file.path, from: activePath)}');
+      }
+    },
+  );
+
+  printSuccess(
+    'Backups complete in ${p.relative(backupDir.path, from: activePath)}/',
+  );
 }
 
 Future<void> _verifyObfuscationReadiness() async {
-  await loadingSpinner('Verifying obfuscation readiness', () async {
-    final gradleFile = File('android/app/build.gradle');
-    if (gradleFile.existsSync()) {
-      final content = gradleFile.readAsStringSync();
-      if (!content.contains('minifyEnabled true')) {
-        printWarning(
-          'Android: minifyEnabled is NOT set to true in build.gradle.',
-        );
-      } else {
-        printSuccess('Android: Minification is enabled.');
+  final activePath = getActiveProjectPath();
+  await loadingSpinner(
+    'Verifying obfuscation readiness in $activePath',
+    () async {
+      final gradleFile = File(p.join(activePath, 'android/app/build.gradle'));
+      if (gradleFile.existsSync()) {
+        final content = gradleFile.readAsStringSync();
+        if (!content.contains('minifyEnabled true')) {
+          printWarning(
+            'Android: minifyEnabled is NOT set to true in build.gradle.',
+          );
+        } else {
+          printSuccess('Android: Minification is enabled.');
+        }
       }
-    }
 
-    final proguardFile = File('android/app/proguard-rules.pro');
-    if (!proguardFile.existsSync()) {
-      printWarning('Android: proguard-rules.pro is missing.');
-    } else {
-      printSuccess('Android: Proguard rules found.');
-    }
-  });
+      final proguardFile = File(
+        p.join(activePath, 'android/app/proguard-rules.pro'),
+      );
+      if (!proguardFile.existsSync()) {
+        printWarning('Android: proguard-rules.pro is missing.');
+      } else {
+        printSuccess('Android: Proguard rules found.');
+      }
+    },
+  );
 }

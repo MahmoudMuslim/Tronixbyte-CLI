@@ -1,11 +1,14 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> generateReleaseNotes() async {
   printSection('📦 Automated Release Note Generator');
 
-  if (!Directory('.git').existsSync()) {
+  final activePath = getActiveProjectPath();
+
+  if (!Directory(p.join(activePath, '.git')).existsSync()) {
     printError(
-      'Git repository not detected. Cannot generate release notes from history.',
+      'Git repository not detected in $activePath. Cannot generate release notes from history.',
     );
     return;
   }
@@ -23,7 +26,7 @@ Future<void> generateReleaseNotes() async {
       '--pretty=format:%s',
       // We could limit to since last tag, but for simplicity we'll take last 50 commits
       '-n 50',
-    ]);
+    ], workingDirectory: activePath);
 
     if (result.exitCode != 0) {
       throw Exception('Git log failed: ${result.stderr}');
@@ -84,10 +87,13 @@ Future<void> generateReleaseNotes() async {
     }
   }
 
-  final filePath = 'RELEASE_NOTES.md';
+  final fileName = 'RELEASE_NOTES.md';
+  final filePath = p.join(activePath, fileName);
   File(filePath).writeAsStringSync(buffer.toString(), mode: FileMode.write);
 
-  printSuccess('Release notes generated successfully: $filePath');
+  printSuccess(
+    'Release notes generated successfully in active project: $fileName',
+  );
   printInfo('👉 Tip: Review and polish the notes before sharing with users.');
 
   ask('Press Enter to return');

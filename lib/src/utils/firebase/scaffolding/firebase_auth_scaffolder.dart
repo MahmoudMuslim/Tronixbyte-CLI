@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> scaffoldAuthLogic(
@@ -7,9 +8,13 @@ Future<void> scaffoldAuthLogic(
   List<String>? enabledProviders,
 }) async {
   if (!pubspec.contains('firebase_auth')) return;
-  printInfo('Scaffolding global Auth logic ($stateType)...');
 
-  final authDir = Directory('lib/core/services/auth');
+  final activePath = getActiveProjectPath();
+  printInfo('Scaffolding global Auth logic ($stateType) in $activePath...');
+
+  final authDir = Directory(
+    p.join(activePath, 'lib', 'core', 'services', 'auth'),
+  );
   if (!authDir.existsSync()) authDir.createSync(recursive: true);
 
   final List<String> socialMethods = [];
@@ -57,7 +62,7 @@ Future<void> scaffoldAuthLogic(
 
   await loadingSpinner('Generating Auth logic files', () async {
     if (stateType == 'bloc' || stateType == 'cubit') {
-      final logicFile = File('lib/core/services/auth/auth_cubit.dart');
+      final logicFile = File(p.join(authDir.path, 'auth_cubit.dart'));
       logicFile.writeAsStringSync("""
 import 'package:$projectName/$projectName.dart';
 
@@ -75,7 +80,7 @@ $socialMethodsStr
 }
 """);
     } else if (stateType == 'riverpod') {
-      final logicFile = File('lib/core/services/auth/auth_provider.dart');
+      final logicFile = File(p.join(authDir.path, 'auth_provider.dart'));
       logicFile.writeAsStringSync("""
 import 'package:$projectName/$projectName.dart';
 
@@ -94,7 +99,7 @@ $socialMethodsStr
 }
 """);
     } else if (stateType == 'getx') {
-      final logicFile = File('lib/core/services/auth/auth_controller.dart');
+      final logicFile = File(p.join(authDir.path, 'auth_controller.dart'));
       logicFile.writeAsStringSync("""
 import 'package:$projectName/$projectName.dart';
 
@@ -116,7 +121,7 @@ $socialMethodsStr
 }
 """);
     } else if (stateType == 'provider') {
-      final logicFile = File('lib/core/services/auth/auth_provider.dart');
+      final logicFile = File(p.join(authDir.path, 'auth_provider.dart'));
       logicFile.writeAsStringSync("""
 import 'package:$projectName/$projectName.dart';
 
@@ -141,7 +146,7 @@ $socialMethodsStr
     }
 
     // Update barrel
-    final barrelFile = File('lib/core/services/auth/z_auth.dart');
+    final barrelFile = File(p.join(authDir.path, 'z_auth.dart'));
     final logicFileName = stateType == 'getx'
         ? 'auth_controller.dart'
         : (stateType == 'riverpod' ? 'auth_provider.dart' : 'auth_cubit.dart');
@@ -151,7 +156,9 @@ $socialMethodsStr
     } else {
       String content = barrelFile.readAsStringSync();
       if (!content.contains(logicFileName)) {
-        barrelFile.writeAsStringSync("$content\nexport '$logicFileName';\n");
+        barrelFile.writeAsStringSync(
+          "${content.trim()}\nexport '$logicFileName';\n",
+        );
       }
     }
   });

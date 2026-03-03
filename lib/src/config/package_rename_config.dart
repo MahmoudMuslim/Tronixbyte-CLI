@@ -1,8 +1,10 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> configurePackageRename() async {
   printSection('Package Name & App Name Renaming');
 
+  final activePath = getActiveProjectPath();
   final prSb = StringBuffer();
   final platforms = ['android', 'ios', 'linux', 'macos', 'web', 'windows'];
 
@@ -43,10 +45,13 @@ Future<void> configurePackageRename() async {
     await loadingSpinner(
       'Updating project package names and identities',
       () async {
-        final file = File('package_rename_config.yaml');
-        file.writeAsStringSync(prSb.toString());
+        final configFile = File(
+          p.join(activePath, 'package_rename_config.yaml'),
+        );
+        configFile.writeAsStringSync(prSb.toString());
 
         printInfo('Running package_rename script...');
+        // runCommand uses getActiveProjectPath() as working directory
         await runCommand('dart', ['run', 'package_rename']);
       },
     );

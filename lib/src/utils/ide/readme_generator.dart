@@ -4,9 +4,10 @@ import 'package:tools/tools.dart';
 Future<void> generateReadme() async {
   printSection('README Generator');
 
+  final activePath = getActiveProjectPath();
   final projectName = await getProjectName();
 
-  await loadingSpinner('Crafting enterprise README.md', () async {
+  await loadingSpinner('Crafting enterprise README.md in $activePath', () async {
     final buffer = StringBuffer();
     buffer.writeln('# ⚡ $projectName\n');
     buffer.writeln(
@@ -48,7 +49,7 @@ Future<void> generateReadme() async {
     buffer.writeln('```\n');
 
     buffer.writeln('## 📦 Implemented Modules');
-    final featuresDir = Directory('lib/features');
+    final featuresDir = Directory(p.join(activePath, 'lib', 'features'));
     if (featuresDir.existsSync()) {
       final features = featuresDir.listSync().whereType<Directory>().toList();
       features.sort((a, b) => p.basename(a.path).compareTo(p.basename(b.path)));
@@ -92,9 +93,7 @@ Future<void> generateReadme() async {
 
     buffer.writeln('### Command Line Interface');
     buffer.writeln('```sh');
-    buffer.writeln(
-      'dart bin/tools.dart  # Access the interactive Tronixbyte menu',
-    );
+    buffer.writeln('tools  # Access the interactive Tronixbyte menu');
     buffer.writeln('```\n');
 
     buffer.writeln('## 🌐 Multi-Environment Support');
@@ -106,9 +105,12 @@ Future<void> generateReadme() async {
     buffer.writeln('- `.env.prod`: Production environment\n');
 
     buffer.writeln('---');
-    buffer.writeln('*Generated with ⚡ [Tronixbyte CLI](bin/tools.dart)*');
+    buffer.writeln(
+      '*Generated with ⚡ [Tronixbyte CLI](https://github.com/tronixbyte)*',
+    );
 
-    File('README.md').writeAsStringSync(buffer.toString());
+    final outFile = File(p.join(activePath, 'README.md'));
+    outFile.writeAsStringSync(buffer.toString());
   });
 
   printSuccess('README.md has been generated with the latest project status.');

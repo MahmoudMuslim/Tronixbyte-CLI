@@ -4,13 +4,15 @@ import 'package:tools/tools.dart';
 Future<void> generateMocks() async {
   printSection('🧪 Smart Test Mock Architect');
 
-  final libDir = Directory('lib/features');
+  final activePath = getActiveProjectPath();
+  final libDir = Directory(p.join(activePath, 'lib', 'features'));
+
   if (!libDir.existsSync()) {
-    printError('lib/features directory not found.');
+    printError('lib/features directory not found at ${libDir.path}.');
     return;
   }
 
-  final mockDir = Directory('test/mocks');
+  final mockDir = Directory(p.join(activePath, 'test', 'mocks'));
   if (!mockDir.existsSync()) {
     mockDir.createSync(recursive: true);
   }
@@ -25,7 +27,7 @@ Future<void> generateMocks() async {
   final List<String> mockExports = [];
 
   await loadingSpinner(
-    'Crawling architecture for injectable interfaces',
+    'Crawling architecture for injectable interfaces in $activePath',
     () async {
       for (final file in filesToScan) {
         final content = file.readAsStringSync();
@@ -45,19 +47,23 @@ Future<void> generateMocks() async {
           final mockFilePath = p.join(mockDir.path, mockFileName);
 
           final projectName = await getProjectName();
-          final relativePath = p
-              .relative(file.path, from: Directory.current.path)
+
+          // libPath logic to get the path starting from 'lib/...'
+          final libPath = p.join(activePath, 'lib');
+          final relativeToLib = p
+              .relative(file.path, from: libPath)
               .replaceAll('\\', '/');
+          final packageImportPath = 'lib/$relativeToLib';
 
           final mockContent =
               """
 import 'package:mocktail/mocktail.dart';
-import 'package:$projectName/$relativePath';
+import 'package:$projectName/$packageImportPath';
 
 class $mockClassName extends Mock implements $className {}
 """;
 
-          File(mockFilePath).writeAsStringSync(mockContent);
+          File(mockFilePath).writeAsStringSync(mockContent.trim() + '\n');
           mockExports.add("export '$mockFileName';");
           generatedCount++;
           printInfo('Generated Mock: $mockClassName');
@@ -66,6 +72,7 @@ class $mockClassName extends Mock implements $className {}
 
       if (mockExports.isNotEmpty) {
         final barrelFile = File(p.join(mockDir.path, 'z_mocks.dart'));
+        mockExports.sort();
         barrelFile.writeAsStringSync('${mockExports.join('\n')}\n');
       }
     },
@@ -73,7 +80,7 @@ class $mockClassName extends Mock implements $className {}
 
   if (generatedCount > 0) {
     printSuccess(
-      'Successfully architected $generatedCount mocks in test/mocks/',
+      'Successfully architected $generatedCount mocks in ${mockDir.path}',
     );
     printInfo('👉 Global Mock Barrel: test/mocks/z_mocks.dart');
   } else {

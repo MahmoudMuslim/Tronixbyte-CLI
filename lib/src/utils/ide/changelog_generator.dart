@@ -1,10 +1,12 @@
 import 'package:tools/tools.dart';
+import 'package:path/path.dart' as p;
 
 Future<void> generateChangelog() async {
   printSection('Professional Changelog Generator');
 
-  final file = File('CHANGELOG.md');
-  final version = await _getCurrentVersion();
+  final activePath = getActiveProjectPath();
+  final file = File(p.join(activePath, 'CHANGELOG.md'));
+  final version = await _getCurrentVersion(activePath);
   final date = DateTime.now().toString().split(' ').first;
 
   printInfo('Current Version: $version');
@@ -34,7 +36,7 @@ Future<void> generateChangelog() async {
 
   final entry = '- **$typeStr**: $description';
 
-  await loadingSpinner('Updating CHANGELOG.md', () async {
+  await loadingSpinner('Updating CHANGELOG.md in $activePath', () async {
     String currentContent = '';
     if (file.existsSync()) {
       currentContent = file.readAsStringSync();
@@ -65,8 +67,8 @@ Future<void> generateChangelog() async {
   printSuccess('CHANGELOG.md updated successfully.');
 }
 
-Future<String> _getCurrentVersion() async {
-  final pubspec = File('pubspec.yaml');
+Future<String> _getCurrentVersion(String activePath) async {
+  final pubspec = File(p.join(activePath, 'pubspec.yaml'));
   if (!pubspec.existsSync()) return '1.0.0+1';
   final content = pubspec.readAsStringSync();
   final match = RegExp(r'version:\s+([^\s\n\r]+)').firstMatch(content);

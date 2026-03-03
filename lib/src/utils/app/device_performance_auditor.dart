@@ -16,9 +16,11 @@ class PerformanceProfile {
 Future<void> runDevicePerformanceAudit() async {
   printSection('📊 Device-Specific Performance Auditor');
 
-  final featuresDir = Directory('lib/features');
+  final activePath = getActiveProjectPath();
+  final featuresDir = Directory(p.join(activePath, 'lib', 'features'));
+
   if (!featuresDir.existsSync()) {
-    printError('lib/features directory not found.');
+    printError('lib/features directory not found at ${featuresDir.path}');
     return;
   }
 
@@ -50,7 +52,7 @@ Future<void> runDevicePerformanceAudit() async {
       .toList();
 
   if (screenFiles.isEmpty) {
-    printInfo('No screens found to audit.');
+    printInfo('No screens found to audit in the active project.');
     return;
   }
 

@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> generateAdService(
@@ -5,11 +6,13 @@ Future<void> generateAdService(
   List<String> enabledTypes,
   Map<String, Map<String, String>> unitIds,
 ) async {
+  final activePath = getActiveProjectPath();
+
   await loadingSpinner('Generating lib/core/services/ad_service.dart', () async {
-    final serviceDir = Directory('lib/core/services');
+    final serviceDir = Directory(p.join(activePath, 'lib', 'core', 'services'));
     if (!serviceDir.existsSync()) serviceDir.createSync(recursive: true);
 
-    final serviceFile = File('lib/core/services/ad_service.dart');
+    final serviceFile = File(p.join(serviceDir.path, 'ad_service.dart'));
     final buffer = StringBuffer();
 
     buffer.writeln("import 'package:$projectName/$projectName.dart';");
@@ -105,7 +108,9 @@ Future<void> generateAdService(
     serviceFile.writeAsStringSync(buffer.toString());
 
     // Update Barrel
-    final barrelFile = File('lib/core/services/z_services.dart');
+    final barrelFile = File(
+      p.join(activePath, 'lib', 'core', 'services', 'z_services.dart'),
+    );
     const exportLine = "export 'ad_service.dart';\n";
     if (!barrelFile.existsSync()) {
       barrelFile.writeAsStringSync(exportLine);

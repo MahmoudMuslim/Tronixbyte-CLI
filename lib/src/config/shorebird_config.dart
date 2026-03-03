@@ -1,6 +1,9 @@
 import 'package:tools/tools.dart';
 
 Future<void> configureShorebird() async {
+  // Ensure we have project context before shorebird operations
+  final activePath = getActiveProjectPath();
+
   // Check if Shorebird is installed
   if (!await ShorebirdCliManager.isInstalled()) {
     printWarning('Shorebird CLI is not detected on your system.');
@@ -45,9 +48,10 @@ Future<void> configureShorebird() async {
         await ShorebirdCliManager.login();
         break;
       case '2':
+        // runCommand uses getActiveProjectPath() internally
         await runCommand('shorebird', [
           'init',
-        ], loadingMessage: 'Initializing Shorebird');
+        ], loadingMessage: 'Initializing Shorebird in $activePath');
         break;
       case '3':
         await ShorebirdCliManager.runDoctor();
@@ -80,7 +84,7 @@ Future<void> configureShorebird() async {
           'pub',
           'add',
           'shorebird_code_push',
-        ], loadingMessage: 'Adding shorebird dependency');
+        ], loadingMessage: 'Adding shorebird dependency to project');
         break;
       case '10':
         await scaffoldShorebird();

@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> configureThemeAndLocale(
@@ -6,9 +7,14 @@ Future<void> configureThemeAndLocale(
 ) async {
   printSection('Theme & Locale Configuration');
 
+  final activePath = getActiveProjectPath();
   final logicDir = _getLogicDir(stateType);
-  final themeDir = Directory('lib/core/theme/manager');
-  final localeDir = Directory('lib/core/locale/manager');
+  final themeDir = Directory(
+    p.join(activePath, 'lib', 'core', 'theme', 'manager'),
+  );
+  final localeDir = Directory(
+    p.join(activePath, 'lib', 'core', 'locale', 'manager'),
+  );
 
   await loadingSpinner(
     'Scaffolding multi-platform theme and localization logic',
@@ -17,11 +23,11 @@ Future<void> configureThemeAndLocale(
       if (!localeDir.existsSync()) localeDir.createSync(recursive: true);
 
       // 1. Generate Theme Logic
-      final themeFile = File('${themeDir.path}/theme_$logicDir.dart');
+      final themeFile = File(p.join(themeDir.path, 'theme_$logicDir.dart'));
       themeFile.writeAsStringSync(getThemeTemplate(projectName, stateType));
       printInfo('Generated: ${themeFile.path}');
 
-      final themeStateFile = File('${themeDir.path}/theme_state.dart');
+      final themeStateFile = File(p.join(themeDir.path, 'theme_state.dart'));
       if (stateType == 'bloc' || stateType == 'cubit') {
         themeStateFile.writeAsStringSync(getThemeStateTemplate(stateType));
       } else {
@@ -32,21 +38,25 @@ Future<void> configureThemeAndLocale(
       printInfo('Generated: ${themeStateFile.path}');
 
       // 2. Generate App Theme (Static styles)
-      final appThemeFile = File('lib/core/theme/app_theme.dart');
+      final appThemeFile = File(
+        p.join(activePath, 'lib', 'core', 'theme', 'app_theme.dart'),
+      );
       appThemeFile.writeAsStringSync(getAppThemeTemplate(projectName));
-      printInfo('Generated: lib/core/theme/app_theme.dart');
+      printInfo('Generated: ${appThemeFile.path}');
 
-      final themeBarrelFile = File('lib/core/theme/z_theme.dart');
+      final themeBarrelFile = File(
+        p.join(activePath, 'lib', 'core', 'theme', 'z_theme.dart'),
+      );
       themeBarrelFile.writeAsStringSync(
         "export 'manager/theme_$logicDir.dart';\nexport 'app_theme.dart';",
       );
 
       // 3. Generate Locale Logic
-      final localeFile = File('${localeDir.path}/locale_$logicDir.dart');
+      final localeFile = File(p.join(localeDir.path, 'locale_$logicDir.dart'));
       localeFile.writeAsStringSync(getLocaleTemplate(projectName, stateType));
       printInfo('Generated: ${localeFile.path}');
 
-      final localeStateFile = File('${localeDir.path}/locale_state.dart');
+      final localeStateFile = File(p.join(localeDir.path, 'locale_state.dart'));
       if (stateType == 'bloc' || stateType == 'cubit') {
         localeStateFile.writeAsStringSync(getLocaleStateTemplate(stateType));
       } else {
@@ -56,7 +66,9 @@ Future<void> configureThemeAndLocale(
       }
       printInfo('Generated: ${localeStateFile.path}');
 
-      final localeBarrelFile = File('lib/core/locale/z_locale.dart');
+      final localeBarrelFile = File(
+        p.join(activePath, 'lib', 'core', 'locale', 'z_locale.dart'),
+      );
       localeBarrelFile.writeAsStringSync(
         "export 'manager/locale_$logicDir.dart';",
       );

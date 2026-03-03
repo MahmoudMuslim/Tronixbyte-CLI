@@ -3,6 +3,8 @@ import 'package:tools/tools.dart';
 Future<void> configureFirebase() async {
   printSection('Firebase Configuration');
 
+  final activePath = getActiveProjectPath();
+
   // Check if Firebase CLI is installed
   if (!await isFirebaseCliInstalled()) {
     printWarning('Firebase CLI is not detected on your system.');

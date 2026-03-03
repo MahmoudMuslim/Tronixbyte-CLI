@@ -5,6 +5,8 @@ import 'package:tools/tools.dart';
 Future<void> configureDatabase() async {
   printSection('Database Configuration (Drift)');
 
+  final activePath = getActiveProjectPath();
+
   // 1. Ensure dependencies are present
   await loadingSpinner('Ensuring database dependencies', () async {
     await runCommand('flutter', ['pub', 'add', ...databaseDeps]);
@@ -20,12 +22,12 @@ Future<void> configureDatabase() async {
   if (dbPath != null && File(dbPath).existsSync()) {
     dbFileName = p.basename(dbPath);
     // Copy database file to assets/database/
-    final dbTargetDir = Directory('assets/database');
+    final dbTargetDir = Directory(p.join(activePath, 'assets', 'database'));
     if (!dbTargetDir.existsSync()) {
       dbTargetDir.createSync(recursive: true);
     }
-    File(dbPath).copySync('assets/database/$dbFileName');
-    _updatePubspecWithDatabase();
+    File(dbPath).copySync(p.join(dbTargetDir.path, dbFileName));
+    _updatePubspecWithDatabase(activePath);
   }
 
   // 3. Ask for schema file path
@@ -38,20 +40,26 @@ Future<void> configureDatabase() async {
     final extension = p.extension(schemaPath).toLowerCase();
     final fileNameWithoutExt = p.basenameWithoutExtension(schemaPath);
 
-    final schemaTargetDir = Directory('lib/core/database');
+    final schemaTargetDir = Directory(
+      p.join(activePath, 'lib', 'core', 'database'),
+    );
     if (!schemaTargetDir.existsSync()) {
       schemaTargetDir.createSync(recursive: true);
     }
 
     if (extension == '.sql') {
       finalSchemaFileName = '$fileNameWithoutExt.drift';
-      File(schemaPath).copySync('lib/core/database/$finalSchemaFileName');
+      File(
+        schemaPath,
+      ).copySync(p.join(schemaTargetDir.path, finalSchemaFileName));
       printInfo(
         'Renamed and copied .sql schema to lib/core/database/$finalSchemaFileName',
       );
     } else if (extension == '.drift') {
       finalSchemaFileName = p.basename(schemaPath);
-      File(schemaPath).copySync('lib/core/database/$finalSchemaFileName');
+      File(
+        schemaPath,
+      ).copySync(p.join(schemaTargetDir.path, finalSchemaFileName));
       printInfo(
         'Copied .drift schema to lib/core/database/$finalSchemaFileName',
       );
@@ -63,13 +71,13 @@ Future<void> configureDatabase() async {
         ? "include: {'$finalSchemaFileName'}"
         : "tables: []";
 
-    final dbDir = Directory('lib/core/database');
+    final dbDir = Directory(p.join(activePath, 'lib', 'core', 'database'));
     if (!dbDir.existsSync()) dbDir.createSync(recursive: true);
 
-    final dbConDir = Directory('lib/core/database/connection');
+    final dbConDir = Directory(p.join(dbDir.path, 'connection'));
     if (!dbConDir.existsSync()) dbConDir.createSync(recursive: true);
 
-    final dbToolsDir = Directory('tool');
+    final dbToolsDir = Directory(p.join(activePath, 'tool'));
     if (!dbToolsDir.existsSync()) dbToolsDir.createSync(recursive: true);
 
     final actualDbName = dbFileName ?? 'app_database.db';
@@ -77,35 +85,43 @@ Future<void> configureDatabase() async {
     // Generate Database files
     final projectName = await getProjectName();
     File(
-      'lib/core/database/app_database.dart',
+      p.join(dbDir.path, 'app_database.dart'),
     ).writeAsStringSync(getDatabaseTemplate(driftAnnotation));
 
-    File('lib/core/database/connection/native.dart').writeAsStringSync(
+    File(p.join(dbConDir.path, 'native.dart')).writeAsStringSync(
       getDatabaseNativeTemplate(
         isDbInAssets: dbFileName != null,
       ).replaceAll('app_database.db', actualDbName),
     );
 
-    File('lib/core/database/connection/web.dart').writeAsStringSync(
+    File(p.join(dbConDir.path, 'web.dart')).writeAsStringSync(
       getDatabaseWebTemplate(
         isDbInAssets: dbFileName != null,
       ).replaceAll('app_database.db', actualDbName),
     );
 
     File(
-      'lib/core/database/connection/unsupported.dart',
+      p.join(dbConDir.path, 'unsupported.dart'),
     ).writeAsStringSync(getDatabaseUnsupportedTemplate());
     File(
-      'lib/core/database/connection/shared.dart',
+      p.join(dbConDir.path, 'shared.dart'),
     ).writeAsStringSync(getDatabaseSharedTemplate());
 
-    File('tool/builder.dart').writeAsStringSync(getDatabaseToolTemplate());
-    File('build.yaml').writeAsStringSync(getDatabaseBuildYamlTemplate());
+    File(
+      p.join(dbToolsDir.path, 'builder.dart'),
+    ).writeAsStringSync(getDatabaseToolTemplate());
+    File(
+      p.join(activePath, 'build.yaml'),
+    ).writeAsStringSync(getDatabaseBuildYamlTemplate());
 
-    File('web/worker.dart').writeAsStringSync(getDatabaseWorkerTemplate());
+    final webDir = Directory(p.join(activePath, 'web'));
+    if (!webDir.existsSync()) webDir.createSync(recursive: true);
+    File(
+      p.join(webDir.path, 'worker.dart'),
+    ).writeAsStringSync(getDatabaseWorkerTemplate());
 
     File(
-      'lib/core/database/z_database.dart',
+      p.join(dbDir.path, 'z_database.dart'),
     ).writeAsStringSync("export 'app_database.dart';");
   });
 
@@ -122,11 +138,15 @@ Future<void> configureDatabase() async {
       final workerRes = await http.get(urlWorker);
       final wasmRes = await http.get(urlWasm);
 
-      final webDir = Directory('web');
+      final webDir = Directory(p.join(activePath, 'web'));
       if (!webDir.existsSync()) webDir.createSync();
 
-      File('web/drift_worker.js').writeAsBytesSync(workerRes.bodyBytes);
-      File('web/sqlite3.wasm').writeAsBytesSync(wasmRes.bodyBytes);
+      File(
+        p.join(webDir.path, 'drift_worker.js'),
+      ).writeAsBytesSync(workerRes.bodyBytes);
+      File(
+        p.join(webDir.path, 'sqlite3.wasm'),
+      ).writeAsBytesSync(wasmRes.bodyBytes);
     } catch (e) {
       printWarning(
         'Could not download web artifacts (Drift/SQLite). You may need to add them manually for web support.',
@@ -138,8 +158,8 @@ Future<void> configureDatabase() async {
   printInfo('👉 Remember to run build_runner to generate the .g.dart file.');
 }
 
-void _updatePubspecWithDatabase() {
-  final file = File('pubspec.yaml');
+void _updatePubspecWithDatabase(String activePath) {
+  final file = File(p.join(activePath, 'pubspec.yaml'));
   if (!file.existsSync()) return;
   String content = file.readAsStringSync();
 

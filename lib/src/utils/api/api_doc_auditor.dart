@@ -4,9 +4,10 @@ import 'package:tools/tools.dart';
 Future<void> runApiDocAudit() async {
   printSection('🛡️ API Documentation Auditor');
 
-  final libDir = Directory('lib');
+  final activePath = getActiveProjectPath();
+  final libDir = Directory(p.join(activePath, 'lib'));
   if (!libDir.existsSync()) {
-    printError('lib directory not found.');
+    printError('lib directory not found at ${libDir.path}');
     return;
   }
 
@@ -54,7 +55,7 @@ Future<void> runApiDocAudit() async {
           }
 
           if (!hasDoc) {
-            final relPath = p.relative(file.path, from: Directory.current.path);
+            final relPath = p.relative(file.path, from: activePath);
             findings.add(
               '❌ Undocumented endpoint in $relPath: "${line.split('(').first}"',
             );

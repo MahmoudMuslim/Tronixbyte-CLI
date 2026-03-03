@@ -4,11 +4,14 @@ import 'package:tools/tools.dart';
 Future<void> runMonorepoManager() async {
   printSection('📦 Multi-Repo Package Manager');
 
-  final packagesDir = Directory('packages');
+  final activePath = getActiveProjectPath();
+  final packagesDir = Directory(p.join(activePath, 'packages'));
+
   if (!packagesDir.existsSync()) {
-    printWarning('No "packages/" directory found at project root.');
+    printWarning('No "packages/" directory found at active project root.');
     final create =
-        (ask('Is this a new monorepo? Create "packages/" folder? (y/n)') ?? 'n')
+        (ask('Is this a new monorepo? Create "packages/" folder in $activePath? (y/n)') ??
+                'n')
             .toLowerCase() ==
         'y';
     if (create) {
@@ -38,65 +41,73 @@ Future<void> runMonorepoManager() async {
 
     switch (choice) {
       case '1':
-        await _initMelos();
+        await _initMelos(activePath);
         break;
       case '2':
-        await _runAcrossPackages(['pub', 'get'], 'Running pub get');
+        await _runAcrossPackages(packagesDir, [
+          'pub',
+          'get',
+        ], 'Running pub get');
         break;
       case '3':
         await _runAcrossPackages(
+          packagesDir,
           ['clean'],
           'Cleaning packages',
           isFlutter: true,
         );
         break;
       case '4':
-        await _listPackages();
+        await _listPackages(packagesDir, activePath);
         break;
       case '5':
-        await _checkVersionConsistency();
+        await _checkVersionConsistency(packagesDir);
         break;
       case '6':
-        await _syncPackageVersions();
+        await _syncPackageVersions(packagesDir);
         break;
       case '7':
-        await _runVersionPusher();
+        await _runVersionPusher(activePath);
         break;
       case '8':
-        await _runChangeSummary();
+        await _runChangeSummary(packagesDir);
         break;
       case '9':
         await runMonorepoDependencyGraph();
         break;
       case '10':
-        await _runWorkspaceCleaner();
+        await _runWorkspaceCleaner(packagesDir);
         break;
     }
   }
 }
 
-Future<void> _initMelos() async {
-  await loadingSpinner('Initializing Melos configuration', () async {
-    await runCommand('dart', ['pub', 'add', 'dev:melos']);
-    final melosFile = File('melos.yaml');
-    if (!melosFile.existsSync()) {
-      melosFile.writeAsStringSync("""
+Future<void> _initMelos(String activePath) async {
+  await loadingSpinner(
+    'Initializing Melos configuration in $activePath',
+    () async {
+      // runCommand already uses activePath
+      await runCommand('dart', ['pub', 'add', 'dev:melos']);
+      final melosFile = File(p.join(activePath, 'melos.yaml'));
+      if (!melosFile.existsSync()) {
+        melosFile.writeAsStringSync("""
 name: my_monorepo
 packages:
   - packages/*
   - .
 """, mode: FileMode.write);
-    }
-  });
+      }
+    },
+  );
   printSuccess('Melos initialized. Run "melos bootstrap" to link packages.');
 }
 
 Future<void> _runAcrossPackages(
+  Directory packagesDir,
   List<String> args,
   String message, {
   bool isFlutter = false,
 }) async {
-  final packagesDir = Directory('packages');
   final entities = packagesDir.listSync().whereType<Directory>();
 
   await loadingSpinner('$message across all packages', () async {
@@ -117,8 +128,7 @@ Future<void> _runAcrossPackages(
   printSuccess('Operation complete for all packages.');
 }
 
-Future<void> _listPackages() async {
-  final packagesDir = Directory('packages');
+Future<void> _listPackages(Directory packagesDir, String activePath) async {
   final entities = packagesDir.listSync().whereType<Directory>().toList();
 
   final List<List<String>> rows = [];
@@ -131,17 +141,16 @@ Future<void> _listPackages() async {
           p.basename(dir.path);
       final version =
           RegExp(r'version:\s+(.*)').firstMatch(content)?.group(1) ?? 'N/A';
-      rows.add([name, version, p.relative(dir.path)]);
+      rows.add([name, version, p.relative(dir.path, from: activePath)]);
     }
   }
 
-  print('\n$blue$bold📦 REGISTERED PACKAGES$reset');
+  print('\n$blue$bold📦 REGISTERED PACKAGES in $activePath$reset');
   printTable(['Package Name', 'Version', 'Location'], rows);
   ask('Press Enter to return');
 }
 
-Future<void> _checkVersionConsistency() async {
-  final packagesDir = Directory('packages');
+Future<void> _checkVersionConsistency(Directory packagesDir) async {
   final entities = packagesDir.listSync().whereType<Directory>();
   final Map<String, String> versions = {};
   bool inconsistent = false;
@@ -182,11 +191,10 @@ Future<void> _checkVersionConsistency() async {
   ask('Press Enter to return');
 }
 
-Future<void> _syncPackageVersions() async {
+Future<void> _syncPackageVersions(Directory packagesDir) async {
   final targetVersion = ask('Enter Target Version (e.g., 1.0.0+1)');
   if (targetVersion == null || targetVersion.isEmpty) return;
 
-  final packagesDir = Directory('packages');
   final entities = packagesDir.listSync().whereType<Directory>();
 
   await loadingSpinner(
@@ -211,29 +219,36 @@ Future<void> _syncPackageVersions() async {
   ask('Press Enter to return');
 }
 
-Future<void> _runVersionPusher() async {
-  printInfo('This tool will tag and push all packages in the monorepo.');
+Future<void> _runVersionPusher(String activePath) async {
+  printInfo(
+    'This tool will tag and push all packages in the monorepo at $activePath.',
+  );
   final version = ask('Enter Tag Version (e.g., v1.2.0)');
   if (version == null) return;
 
   await loadingSpinner('Tagging and Pushing Monorepo', () async {
     // 1. Git Tag
-    await Process.run('git', ['tag', version]);
+    await Process.run('git', ['tag', version], workingDirectory: activePath);
     // 2. Git Push Tags
-    await Process.run('git', ['push', 'origin', version]);
+    await Process.run('git', [
+      'push',
+      'origin',
+      version,
+    ], workingDirectory: activePath);
     // 3. Git Push Code
-    await Process.run('git', ['push', 'origin', 'HEAD']);
+    await Process.run('git', [
+      'push',
+      'origin',
+      'HEAD',
+    ], workingDirectory: activePath);
   });
 
   printSuccess('Monorepo version $version pushed to origin!');
   ask('Press Enter to return');
 }
 
-Future<void> _runChangeSummary() async {
+Future<void> _runChangeSummary(Directory packagesDir) async {
   printSection('Multi-Repo Change Summary');
-
-  final packagesDir = Directory('packages');
-  if (!packagesDir.existsSync()) return;
 
   final List<List<String>> rows = [];
 
@@ -266,7 +281,7 @@ Future<void> _runChangeSummary() async {
   ask('Press Enter to return');
 }
 
-Future<void> _runWorkspaceCleaner() async {
+Future<void> _runWorkspaceCleaner(Directory packagesDir) async {
   printSection('Multi-Repo Workspace Cleaner');
   final confirm =
       (ask(
@@ -276,9 +291,6 @@ Future<void> _runWorkspaceCleaner() async {
           .toLowerCase() ==
       'y';
   if (!confirm) return;
-
-  final packagesDir = Directory('packages');
-  if (!packagesDir.existsSync()) return;
 
   await loadingSpinner('Performing Nuclear Workspace Clean', () async {
     final entities = packagesDir.listSync().whereType<Directory>();

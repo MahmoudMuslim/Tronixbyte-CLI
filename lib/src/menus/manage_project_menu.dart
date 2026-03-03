@@ -4,6 +4,7 @@ Future<void> manageProjectMenu() async {
   await ensureProjectRoot();
 
   while (true) {
+    final activePath = getActiveProjectPath();
     final options = [
       'Show Elite Project Dashboard (Real-time)',
       'Run Full Project Setup (All-in-one Initialization)',
@@ -25,6 +26,7 @@ Future<void> manageProjectMenu() async {
       'Project Velocity Predictor (Release Trends)',
       'Manage App Version',
       'Project Health & Maintenance',
+      'Change/Switch Managed Project',
     ];
 
     final choice = selectOption(
@@ -93,6 +95,11 @@ Future<void> manageProjectMenu() async {
         break;
       case '20':
         await maintenanceMenu();
+        break;
+      case '21':
+        // Clear active project and re-run selection
+        await InputHistoryManager.removeInput('active_project', activePath);
+        await ensureProjectRoot();
         break;
       case 'back':
         return;

@@ -4,17 +4,22 @@ import 'package:tools/tools.dart';
 Future<void> runGoldenManager() async {
   printSection('🧪 Golden Test Manager');
 
-  final baselineDir = Directory('screenshots/baseline');
-  final currentDir = Directory('build/integration_test_screenshots');
+  final activePath = getActiveProjectPath();
+  final baselineDir = Directory(p.join(activePath, 'screenshots', 'baseline'));
+  final currentDir = Directory(
+    p.join(activePath, 'build', 'integration_test_screenshots'),
+  );
 
   if (!baselineDir.existsSync()) {
-    printWarning('No baseline screenshots found. Run a capture first.');
+    printWarning(
+      'No baseline screenshots found in $activePath. Run a capture first.',
+    );
     return;
   }
 
   if (!currentDir.existsSync()) {
     printError(
-      'Current screenshots not found. Run "App Screenshot Automator" first.',
+      'Current screenshots not found in project build folder. Run "App Screenshot Automator" first.',
     );
     return;
   }
@@ -26,7 +31,7 @@ Future<void> runGoldenManager() async {
       .where((f) => f.path.endsWith('.png'))
       .toList();
 
-  await loadingSpinner('Analyzing visual changes', () async {
+  await loadingSpinner('Analyzing visual changes in $activePath', () async {
     for (final baseline in baselineFiles) {
       final name = p.basename(baseline.path);
       final current = File(p.join(currentDir.path, name));

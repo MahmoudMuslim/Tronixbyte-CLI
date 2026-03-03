@@ -42,6 +42,6 @@ Future<void> showPerformanceDashboard() async {
   }
 
   print('\n$blue$bold${'=' * 60}$reset');
-  printSuccess('Dashboard generated from .tronix_perf_log.json');
+  printSuccess('Dashboard generated from global performance log.');
   ask('Press Enter to return');
 }

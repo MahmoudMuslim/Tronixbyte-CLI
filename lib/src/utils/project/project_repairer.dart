@@ -1,11 +1,19 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> repairProject() async {
   printSection('Professional Project Repair');
+
+  final activePath = getActiveProjectPath();
   final totalSteps = 8;
 
   // 1. Sync dependencies
-  printStep(1, totalSteps, 'Synchronizing dependencies (pub get)');
+  printStep(
+    1,
+    totalSteps,
+    'Synchronizing dependencies (pub get) in $activePath',
+  );
+  // runCommand uses getActiveProjectPath() as workingDirectory internally
   await runCommand('flutter', [
     'pub',
     'get',
@@ -29,13 +37,14 @@ Future<void> repairProject() async {
     totalSteps,
     'Re-wiring feature injections in lib/injection.dart',
   );
-  final featuresDir = Directory('lib/features');
+  final featuresDir = Directory(p.join(activePath, 'lib', 'features'));
   if (featuresDir.existsSync()) {
     final features = featuresDir.listSync().whereType<Directory>();
     for (final feature in features) {
-      final name = feature.path.split(Platform.pathSeparator).last;
+      final name = p.basename(feature.path);
       if (name.startsWith('z_')) continue;
       final namePascal = name[0].toUpperCase() + name.substring(1);
+      // wireFeatureInjection is assumed to be project-aware (using activePath internally)
       await wireFeatureInjection(namePascal);
     }
   }
@@ -59,5 +68,7 @@ Future<void> repairProject() async {
   ], loadingMessage: 'Generating code');
 
   print('\n');
-  printSuccess('Project repair complete! Everything is back in sync.');
+  printSuccess(
+    'Project repair complete! Everything is back in sync in active project.',
+  );
 }

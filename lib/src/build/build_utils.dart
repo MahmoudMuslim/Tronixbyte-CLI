@@ -1,9 +1,11 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 class BuildAbortException implements Exception {}
 
 List<String> getCommonBuildArgs() {
   final List<String> args = [];
+  final activePath = getActiveProjectPath();
 
   final useEnvStr = ask('Use .env for dart-defines? (y/n, "b" to back)') ?? 'n';
   if (useEnvStr.toLowerCase() == 'b') throw BuildAbortException();
@@ -13,10 +15,12 @@ List<String> getCommonBuildArgs() {
     final envType = (ask('Which env file? (dev/stg/prod)') ?? 'dev')
         .toLowerCase();
     final envPath = '.env.$envType';
-    if (File(envPath).existsSync()) {
+    if (File(p.join(activePath, envPath)).existsSync()) {
       args.add('--dart-define-from-file=$envPath');
     } else {
-      printWarning('$envPath not found. Proceeding without it.');
+      printWarning(
+        '$envPath not found in the active project. Proceeding without it.',
+      );
     }
   }
 
@@ -39,9 +43,10 @@ Future<void> addObfuscationArgs(List<String> args, String platform) async {
       (ask('Obfuscate identifiers? (y/n)') ?? 'n').toLowerCase() == 'y';
   if (obfuscate) {
     args.add('--obfuscate');
+    final defaultSplitPath = p.join('build', platform, 'symbols');
     final splitPath =
-        ask('Split debug info path (default: build/$platform/symbols)') ??
-        'build/$platform/symbols';
+        ask('Split debug info path (default: $defaultSplitPath)') ??
+        defaultSplitPath;
     args.add('--split-debug-info=$splitPath');
   }
 }

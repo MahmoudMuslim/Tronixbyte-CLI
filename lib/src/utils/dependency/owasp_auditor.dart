@@ -1,11 +1,16 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runOwaspDependencyAudit() async {
   printSection('🛡️ OWASP Dependency Audit (OSV.dev)');
 
-  final lockFile = File('pubspec.lock');
+  final activePath = getActiveProjectPath();
+  final lockFile = File(p.join(activePath, 'pubspec.lock'));
+
   if (!lockFile.existsSync()) {
-    printError('pubspec.lock not found. Run "flutter pub get" first.');
+    printError(
+      'pubspec.lock not found at ${lockFile.path}. Run "flutter pub get" first.',
+    );
     return;
   }
 
@@ -13,7 +18,7 @@ Future<void> runOwaspDependencyAudit() async {
   final List<List<String>> reportRows = [];
 
   await loadingSpinner(
-    'Querying OSV.dev database for package vulnerabilities',
+    'Querying OSV.dev database for package vulnerabilities in $activePath',
     () async {
       final content = lockFile.readAsStringSync();
 
@@ -53,10 +58,11 @@ Future<void> runOwaspDependencyAudit() async {
         'pub',
         'deps',
         '--list-advisories',
-      ]);
+      ], workingDirectory: activePath);
+
       if (result.exitCode == 0 &&
           result.stdout.toString().contains('advisory')) {
-        // We could parse this too, but for now we rely on the stdout
+        // Official flutter advisories found
       }
     },
   );

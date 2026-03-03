@@ -5,9 +5,13 @@ import 'package:tools/tools.dart';
 Future<void> runPerformanceAssetBundling() async {
   printSection('📈 Performance-Driven Asset Bundling');
 
-  final assetsDir = Directory('assets/images');
+  final activePath = getActiveProjectPath();
+  final assetsDir = Directory(p.join(activePath, 'assets', 'images'));
+
   if (!assetsDir.existsSync()) {
-    printInfo('No assets/images directory found.');
+    printInfo(
+      'No assets/images directory found in the active project at ${assetsDir.path}.',
+    );
     return;
   }
 
@@ -26,11 +30,12 @@ Future<void> runPerformanceAssetBundling() async {
   int generatedCount = 0;
 
   await loadingSpinner(
-    'Generating multi-density asset bundles (2x, 3x)',
+    'Generating multi-density asset bundles (2x, 3x) in $activePath',
     () async {
       for (final file in images) {
         // Skip if already in a density folder
-        if (file.path.contains('/2.0x/') || file.path.contains('/3.0x/')) {
+        if (file.path.contains('${p.separator}2.0x${p.separator}') ||
+            file.path.contains('${p.separator}3.0x${p.separator}')) {
           continue;
         }
 
@@ -52,7 +57,7 @@ Future<void> runPerformanceAssetBundling() async {
           p.join(dir2x.path, fileName),
         ).writeAsBytesSync(img.encodeNamedImage(fileName, img2x)!);
 
-        // Create 3.0x (Original is treated as 3x if it's high res, or we scale up)
+        // Create 3.0x
         final dir3x = Directory(p.join(baseDir, '3.0x'));
         if (!dir3x.existsSync()) dir3x.createSync(recursive: true);
         File(p.join(dir3x.path, fileName)).writeAsBytesSync(bytes);

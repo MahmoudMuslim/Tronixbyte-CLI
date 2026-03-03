@@ -4,13 +4,15 @@ import 'package:tools/tools.dart';
 Future<void> generateFeaturesOverview() async {
   printSection('Features Overview Generator');
 
-  final featuresDir = Directory('lib/features');
+  final activePath = getActiveProjectPath();
+  final featuresDir = Directory(p.join(activePath, 'lib', 'features'));
+
   if (!featuresDir.existsSync()) {
-    printError('lib/features directory not found.');
+    printError('lib/features directory not found at ${featuresDir.path}');
     return;
   }
 
-  await loadingSpinner('Generating FEATURES.md', () async {
+  await loadingSpinner('Generating FEATURES.md in $activePath', () async {
     final buffer = StringBuffer();
     buffer.writeln('# 🧩 Project Features Overview');
     buffer.writeln(
@@ -35,7 +37,7 @@ Future<void> generateFeaturesOverview() async {
         p.join(feature.path, 'presentation'),
       ).existsSync();
 
-      final testDir = Directory(p.join('test', 'features', name));
+      final testDir = Directory(p.join(activePath, 'test', 'features', name));
       final hasTests =
           testDir.existsSync() &&
           testDir
@@ -67,7 +69,9 @@ Future<void> generateFeaturesOverview() async {
       );
     }
 
-    File('FEATURES.md').writeAsStringSync(buffer.toString());
+    File(
+      p.join(activePath, 'FEATURES.md'),
+    ).writeAsStringSync(buffer.toString());
   });
 
   printSuccess('FEATURES.md generated successfully at the project root.');

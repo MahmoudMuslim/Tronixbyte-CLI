@@ -4,9 +4,10 @@ import 'package:tools/tools.dart';
 Future<void> showProjectStats() async {
   printSection('Project Intelligence Dashboard');
 
-  final libDir = Directory('lib');
+  final activePath = getActiveProjectPath();
+  final libDir = Directory(p.join(activePath, 'lib'));
   if (!libDir.existsSync()) {
-    printError('lib directory not found.');
+    printError('lib directory not found at ${libDir.path}');
     return;
   }
 
@@ -69,7 +70,7 @@ Future<void> showProjectStats() async {
     }
 
     // Test Metrics
-    final testDir = Directory('test');
+    final testDir = Directory(p.join(activePath, 'test'));
     if (testDir.existsSync()) {
       final tests = testDir
           .listSync(recursive: true)

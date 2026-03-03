@@ -3,7 +3,10 @@ import 'package:tools/tools.dart';
 
 Future<void> runProjectDoctor() async {
   printSection('Project Doctor (Health Diagnosis)');
+
+  final activePath = getActiveProjectPath();
   final projectName = await getProjectName();
+
   int issuesFound = 0;
   int warningsFound = 0;
 
@@ -21,7 +24,7 @@ Future<void> runProjectDoctor() async {
     printSuccess(message);
   }
 
-  await loadingSpinner('Diagnosing project health', () async {
+  await loadingSpinner('Diagnosing project health in $activePath', () async {
     print('\n$blue$bold📁 Structural Integrity$reset');
     final requiredDirs = [
       'lib/core',
@@ -33,7 +36,7 @@ Future<void> runProjectDoctor() async {
     ];
 
     for (final dir in requiredDirs) {
-      if (Directory(dir).existsSync()) {
+      if (Directory(p.join(activePath, dir)).existsSync()) {
         reportSuccessStatus('Directory $dir found.');
       } else {
         reportIssue('Missing critical directory: $dir');
@@ -47,7 +50,6 @@ Future<void> runProjectDoctor() async {
       'lib/app.dart',
       'lib/injection.dart',
       'lib/$projectName.dart',
-      'lib/src/z_src.dart',
       '.env.dev',
       '.env.stg',
       '.env.prod',
@@ -55,7 +57,7 @@ Future<void> runProjectDoctor() async {
     ];
 
     for (final file in requiredFiles) {
-      if (File(file).existsSync()) {
+      if (File(p.join(activePath, file)).existsSync()) {
         reportSuccessStatus('File $file found.');
       } else {
         if (file.startsWith('.env.')) {
@@ -70,7 +72,7 @@ Future<void> runProjectDoctor() async {
     await validateEnvSync();
 
     print('\n$blue$bold🔗 Barrel File Consistency$reset');
-    final libDir = Directory('lib');
+    final libDir = Directory(p.join(activePath, 'lib'));
     if (libDir.existsSync()) {
       final List<FileSystemEntity> entities = libDir.listSync(recursive: true);
       for (final entity in entities) {
@@ -99,7 +101,7 @@ Future<void> runProjectDoctor() async {
               );
               if (hasDartFiles) {
                 reportWarning(
-                  'Missing barrel file in $folderName: ${barrelFile.path}',
+                  'Missing barrel file in $folderName: ${p.relative(barrelFile.path, from: activePath)}',
                 );
               }
             }
@@ -118,32 +120,37 @@ Future<void> runProjectDoctor() async {
     await validateLocalization();
 
     print('\n$blue$bold🔥 Cloud & Delivery$reset');
-    if (File('lib/core/services/firebase_service.dart').existsSync()) {
+    if (File(
+      p.join(activePath, 'lib/core/services/firebase_service.dart'),
+    ).existsSync()) {
       reportSuccessStatus('Firebase Integration detected.');
     } else {
       reportWarning('Firebase Integration not found.');
     }
 
-    if (File('shorebird.yaml').existsSync()) {
+    if (File(p.join(activePath, 'shorebird.yaml')).existsSync()) {
       reportSuccessStatus('Shorebird Code Push detected.');
     } else {
       reportWarning('Shorebird Code Push not initialized.');
     }
 
     print('\n$blue$bold🏗️ Dependency Analysis$reset');
-    final pubspecContent = File('pubspec.yaml').readAsStringSync();
-    final criticalDeps = [
-      'get_it',
-      'go_router',
-      'easy_localization',
-      'dio',
-      'drift',
-    ];
-    for (final dep in criticalDeps) {
-      if (!pubspecContent.contains(dep)) {
-        reportWarning(
-          '$dep not found in pubspec.yaml. This is unusual for a Tronixbyte project.',
-        );
+    final pubspecFile = File(p.join(activePath, 'pubspec.yaml'));
+    if (pubspecFile.existsSync()) {
+      final pubspecContent = pubspecFile.readAsStringSync();
+      final criticalDeps = [
+        'get_it',
+        'go_router',
+        'easy_localization',
+        'dio',
+        'drift',
+      ];
+      for (final dep in criticalDeps) {
+        if (!pubspecContent.contains(dep)) {
+          reportWarning(
+            '$dep not found in pubspec.yaml. This is unusual for a Tronixbyte project.',
+          );
+        }
       }
     }
   });
@@ -155,7 +162,7 @@ Future<void> runProjectDoctor() async {
     );
   } else {
     printWarning(
-      'STATUS: Project has $issuesFound Critical Issues and $warningsFound Warnings.',
+      'STATUS: Project at $activePath has $issuesFound Critical Issues and $warningsFound Warnings.',
     );
     if (issuesFound > 0) {
       printInfo(

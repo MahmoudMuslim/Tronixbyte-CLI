@@ -1,9 +1,14 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> runJailbreakDetectionWizard() async {
   printSection('🛡️ Root & Jailbreak Detection Wizard');
 
-  printInfo('This tool will help you scaffold device integrity checks.');
+  final activePath = getActiveProjectPath();
+
+  printInfo(
+    'This tool will help you scaffold device integrity checks in $activePath.',
+  );
   printInfo(
     'It integrates basic logic to detect rooted Android or jailbroken iOS devices.',
   );
@@ -14,18 +19,21 @@ Future<void> runJailbreakDetectionWizard() async {
       'y';
   if (!confirm) return;
 
-  await loadingSpinner('Scaffolding security services', () async {
-    final projectName = await getProjectName();
-    final serviceFile = File('lib/core/services/security_service.dart');
+  await loadingSpinner(
+    'Scaffolding security services in $activePath',
+    () async {
+      final projectName = await getProjectName();
+      final serviceFile = File(
+        p.join(activePath, 'lib/core/services/security_service.dart'),
+      );
 
-    if (!serviceFile.parent.existsSync()) {
-      serviceFile.parent.createSync(recursive: true);
-    }
+      if (!serviceFile.parent.existsSync()) {
+        serviceFile.parent.createSync(recursive: true);
+      }
 
-    final content =
-        """
+      final content = """
 import 'package:flutter/services.dart';
-import 'package:$projectName/$projectName.dart';
+import 'package:\$projectName/\$projectName.dart';
 
 class SecurityService {
   static const MethodChannel _channel = MethodChannel('com.tronixbyte.security');
@@ -39,7 +47,7 @@ class SecurityService {
       // return isRooted;
       return false; 
     } catch (e) {
-      debugPrint('Security check failed: \$e');
+      debugPrint('Security check failed: \\\$e');
       return false;
     }
   }
@@ -57,10 +65,11 @@ class SecurityService {
 }
 """;
 
-    serviceFile.writeAsStringSync(content.trim(), mode: FileMode.write);
-    updateServiceBarrel('security_service.dart');
-    await wireCoreInjection('SecurityService');
-  });
+      serviceFile.writeAsStringSync(content.trim(), mode: FileMode.write);
+      updateServiceBarrel('security_service.dart');
+      await wireCoreInjection('SecurityService');
+    },
+  );
 
   printSuccess(
     'Jailbreak detection foundation scaffolded: lib/core/services/security_service.dart',

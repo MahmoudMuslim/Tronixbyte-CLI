@@ -1,4 +1,5 @@
 import 'package:tools/tools.dart';
+import 'package:path/path.dart' as p;
 
 Future<void> promptRemoveFeature() async {
   printSection('Feature Removal Wizard');
@@ -23,7 +24,8 @@ Future<void> promptRemoveFeature() async {
 
 Future<void> removeFeature(String name) async {
   final namePascal = name[0].toUpperCase() + name.substring(1);
-  final featurePath = 'lib/features/$name';
+  final activePath = getActiveProjectPath();
+  final featurePath = p.join(activePath, 'lib', 'features', name);
 
   await loadingSpinner('Removing feature: $name', () async {
     // 1. Delete directories
@@ -32,11 +34,11 @@ Future<void> removeFeature(String name) async {
       dir.deleteSync(recursive: true);
       printInfo('Deleted directory: $featurePath');
     } else {
-      printWarning('Feature directory not found.');
+      printWarning('Feature directory not found at $featurePath');
     }
 
     // 2. Unwire Injection
-    final injectionFile = File('lib/injection.dart');
+    final injectionFile = File(p.join(activePath, 'lib', 'injection.dart'));
     if (injectionFile.existsSync()) {
       String content = injectionFile.readAsStringSync();
       final initCall = '  await init${namePascal}Injection();';
@@ -44,8 +46,23 @@ Future<void> removeFeature(String name) async {
         content = content.replaceFirst('$initCall\n', '');
         content = content.replaceFirst(initCall, '');
         injectionFile.writeAsStringSync(content);
-        printInfo('Unwired from lib/injection.dart');
+        printInfo('Unwired from ${injectionFile.path}');
       }
+    }
+
+    // 3. Update lib/features/z_features.dart
+    final barrelFile = File(
+      p.join(activePath, 'lib', 'features', 'z_features.dart'),
+    );
+    if (barrelFile.existsSync()) {
+      String content = barrelFile.readAsStringSync();
+      final exportLine = "export '$name/z_$name.dart';\n";
+      final exportLineAlt = "export '$name/z_$name.dart';";
+
+      content = content.replaceAll(exportLine, '');
+      content = content.replaceAll(exportLineAlt, '');
+      barrelFile.writeAsStringSync(content);
+      printInfo('Updated barrel at ${barrelFile.path}');
     }
   });
 

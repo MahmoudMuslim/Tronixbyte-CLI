@@ -1,3 +1,4 @@
+import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
 Future<void> generateFirebaseService(
@@ -5,11 +6,15 @@ Future<void> generateFirebaseService(
   String pubspec, {
   List<String>? enabledProviders,
 }) async {
-  print('   📄 Generating lib/core/services/firebase_service.dart...');
-  final serviceDir = Directory('lib/core/services');
+  final activePath = getActiveProjectPath();
+  print(
+    '   📄 Generating lib/core/services/firebase_service.dart in $activePath...',
+  );
+
+  final serviceDir = Directory(p.join(activePath, 'lib', 'core', 'services'));
   if (!serviceDir.existsSync()) serviceDir.createSync(recursive: true);
 
-  final serviceFile = File('lib/core/services/firebase_service.dart');
+  final serviceFile = File(p.join(serviceDir.path, 'firebase_service.dart'));
   final buffer = StringBuffer();
 
   buffer.writeln("import 'package:$projectName/$projectName.dart';");
@@ -140,17 +145,19 @@ Future<void> generateFirebaseService(
     buffer.writeln("}");
   }
 
-  serviceFile.writeAsStringSync(buffer.toString(), mode: FileMode.append);
+  serviceFile.writeAsStringSync(buffer.toString());
 
   // Update Barrel
-  final barrelFile = File('lib/core/services/z_services.dart');
+  final barrelFile = File(
+    p.join(activePath, 'lib', 'core', 'services', 'z_services.dart'),
+  );
   const exportLine = "export 'firebase_service.dart';\n";
   if (!barrelFile.existsSync()) {
-    barrelFile.writeAsStringSync(exportLine, mode: FileMode.append);
+    barrelFile.writeAsStringSync(exportLine);
   } else {
     String content = barrelFile.readAsStringSync();
     if (!content.contains('firebase_service.dart')) {
-      barrelFile.writeAsStringSync(exportLine, mode: FileMode.append);
+      barrelFile.writeAsStringSync('$content$exportLine');
     }
   }
 }
