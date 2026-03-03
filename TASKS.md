@@ -39,7 +39,7 @@ This document serves as the strategic architectural roadmap for the **Tronixbyte
 - [ ] **Dead Code & Asset Purge**:
   - Deep-scan to identify unused classes, functions, and orphaned assets (`assets/`) that the standard compiler might miss.
 
-### 4. 📈 Real-Time Engineering Dashboard (TUI)
+### 📈 4. Real-Time Engineering Dashboard (TUI)
 *Objective: High-visibility technical debt and security monitoring.*
 - [ ] **Visual Technical Debt Monitor**:
   - Terminal-based dashboard showing "Architectural Health Score" based on LOC, complexity, and coverage.
@@ -75,14 +75,17 @@ This document serves as the strategic architectural roadmap for the **Tronixbyte
 
 ## ✅ Completed Milestones (Phase 21)
 - [x] **Global Project-Agnostic Context**: Decoupled CLI from source folder; manages any project via absolute path persistence.
-- [x] **Persistent Active Project Memory**: Remembers "Active Project" globally across reboots.
+- [x] **Persistent Active Project Memory**: Remembers "Active Project" globally across terminal sessions via `.tronix_history.json`.
+- [x] **Context-Aware Process Runner**: Robust `runCommand` wrapper that enforces execution within the target project's root.
 - [x] **Nuclear Project Repairer**: One-click restoration of architectural links, injections, and asset constants.
-- [x] **Hardcoded Secret Extractor**: Automated detection and extraction of secrets to `.env` with source code refactoring.
+- [x] **Hardcoded Secret Extractor**: Automated regex-based detection and extraction of secrets to `.env` with source code refactoring.
+- [x] **API Mock Server (Self-Hosting)**: Auto-generate a local Shelf-based mock server from `ApiService` definitions.
 - [x] **Localization AI Translator**: Google Gemini integration for multi-locale JSON translation (100+ languages).
 - [x] **Elite Security Suite**: Automated scaffolding for SSL Pinning, Biometric Auth, and Root Detection.
 - [x] **Monorepo Manager**: Specialized Melos integration and multi-package workspace cleaning.
 - [x] **Advanced Code Metrics**: Project complexity dashboard and LOC analysis.
 - [x] **Recursive Barrel Management**: Automated generation and refresh of `z_*.dart` export files.
+- [x] **Visual Regression Suite**: Pixel-match screenshot comparison with automated HTML report generation.
 
 ---
 *Last Updated: 2025-01-27 | Roadmap subject to evolution based on Flutter ecosystem shifts.*
