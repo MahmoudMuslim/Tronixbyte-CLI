@@ -1,6 +1,7 @@
 export 'build_runner_commands.dart';
 export 'changelog_generator.dart';
 export 'debug_config_generator.dart';
+export 'feature_readme_generator.dart';
 export 'readme_generator.dart';
 export 'security_auditor.dart';
 export 'snippet_generator.dart';

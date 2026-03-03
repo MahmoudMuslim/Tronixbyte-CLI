@@ -11,7 +11,6 @@ export 'input_history_manager.dart';
 export 'input_utils.dart';
 export 'mermaid_generator.dart';
 export 'naming_convention_enforcer.dart';
-export 'path_tracker.dart';
 export 'performance_auditor.dart';
 export 'performance_dashboard.dart';
 export 'performance_tracker.dart';

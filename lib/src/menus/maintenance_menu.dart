@@ -1,5 +1,5 @@
-import 'package:tools/tools.dart';
 import 'package:path/path.dart' as p;
+import 'package:tools/tools.dart';
 
 Future<void> maintenanceMenu() async {
   while (true) {
@@ -15,15 +15,21 @@ Future<void> maintenanceMenu() async {
       'Performance Analytics Dashboard (CLI Speed)',
       'Feature Complexity Auditor (LOC, Logic, Widgets)',
       'Detailed Code Metrics (LOC, logic/ui ratio)',
+      'Memory Leak & AST Resource Auditor',
+      'Dead Code & Asset Purger (Nuclear Clean)',
+      'Self-Healing Code Engine (AI Lint Fixer)',
       'Find & Clean Unused Assets',
       'Find & Remove Unused Dependencies',
       'Dependency & Architecture Linter (Cycles, Layers)',
+      'Live Security Vulnerability Feed (OSV.dev)',
+      'License Compliance & GPL Guard',
       'Naming Convention Enforcer (lib/ snake_case)',
       'Fix Relative Imports (Convert to package: imports)',
       'Project Statistics & Overview',
       'Refresh All Barrel Files (z_*.dart)',
       'Generate VS Code Snippets & Task Integrations',
       'Generate Professional README.md',
+      'Generate Feature-Level Documentation (READMEs)',
       'Generate App Changelog (History)',
       'Generate VS Code Debug Configs (launch.json)',
       'Install Git Pre-commit Hooks',
@@ -40,12 +46,17 @@ Future<void> maintenanceMenu() async {
       'Dependency License Auditor (OSS Compliance)',
       'Project Architectural Map (Graphviz Visualizer)',
       'Design System Auditor (UI Consistency)',
+      'Design System Studio (Material 3 Token Generator)',
+      'Dynamic Flavor Code-Gen (main_*.dart)',
+      'Logic Flow Obfuscation Guard (Research)',
+      'Secure Enclave Bridge (Biometric Storage)',
       'SSL Pinning Security Wizard',
       'Root & Jailbreak Detection Wizard',
       'Advanced Biometric Auth Scaffolder',
       'Project Growth Forecaster (Trend Analytics)',
       'Device-Specific Performance Auditor (FPS Simulation)',
       'Advanced API Mock Server (Local Scaffolding)',
+      'Visual Technical Debt Monitor (Health Score)',
     ];
 
     final choice = selectOption(
@@ -89,101 +100,135 @@ Future<void> maintenanceMenu() async {
         await runCodeMetrics();
         break;
       case '12':
-        await findUnusedAssets();
+        await runMemoryLeakAudit();
         break;
       case '13':
-        await findUnusedDependencies();
+        await runDeadCodePurge();
         break;
       case '14':
-        await checkDependencies();
-        await checkArchitecture();
-        await detectCircularDependencies();
+        await runSelfHealingEngine();
         break;
       case '15':
-        await enforceNamingConventions();
+        await findUnusedAssets();
         break;
       case '16':
-        await fixRelativeImports();
+        await findUnusedDependencies();
         break;
       case '17':
-        await showProjectStats();
+        await checkDependencies();
+        await checkArchitecture();
+        await enforceArchitecturalBoundaries();
+        await detectCircularDependencies();
         break;
       case '18':
-        await refreshBarrels();
+        await runLiveSecurityFeed();
         break;
       case '19':
+        await runLicenseComplianceGuard();
+        break;
+      case '20':
+        await enforceNamingConventions();
+        break;
+      case '21':
+        await fixRelativeImports();
+        break;
+      case '22':
+        await showProjectStats();
+        break;
+      case '23':
+        await refreshBarrels();
+        break;
+      case '24':
         await generateVsCodeSnippets();
         await generateVsCodeTasks();
         break;
-      case '20':
+      case '25':
         await generateReadme();
         break;
-      case '21':
+      case '26':
+        await generateFeatureDocumentation();
+        break;
+      case '27':
         await generateChangelog();
         break;
-      case '22':
+      case '28':
         await generateDebugConfigs();
         break;
-      case '23':
+      case '29':
         await installGitHooks();
         break;
-      case '24':
+      case '30':
         await configureCiCd();
         break;
-      case '25':
+      case '31':
         await _runDeepClean();
         break;
-      case '26':
+      case '32':
         await runCommand('flutter', ['clean']);
         await runCommand('flutter', ['pub', 'get']);
         break;
-      case '27':
+      case '33':
         await runApiStressTester();
         break;
-      case '28':
+      case '34':
         await runPenetrationTest();
         break;
-      case '29':
+      case '35':
         await runApiRegressionTester();
         break;
-      case '30':
+      case '36':
         await runScreenshotComparison();
         break;
-      case '31':
+      case '37':
         await runGoldenManager();
         break;
-      case '32':
+      case '38':
         await runApiDocAudit();
         break;
-      case '33':
+      case '39':
         await runStoreMetadataAudit();
         break;
-      case '34':
+      case '40':
         await runLicenseAudit();
         break;
-      case '35':
+      case '41':
         await runArchitectureMapping();
         break;
-      case '36':
+      case '42':
         await runDesignSystemAudit();
         break;
-      case '37':
+      case '43':
+        await runDesignSystemStudio();
+        break;
+      case '44':
+        await runFlavorGenerator();
+        break;
+      case '45':
+        await runObfuscationGuard();
+        break;
+      case '46':
+        await runSecureEnclaveBridge();
+        break;
+      case '47':
         await runSslPinningWizard();
         break;
-      case '38':
+      case '48':
         await runJailbreakDetectionWizard();
         break;
-      case '39':
+      case '49':
         await runBiometricAuthWizard();
         break;
-      case '40':
+      case '50':
         await runGrowthForecaster();
         break;
-      case '41':
+      case '51':
         await runDevicePerformanceAudit();
         break;
-      case '42':
+      case '52':
         await runApiMockServerGenerator();
+        break;
+      case '53':
+        await runTechDebtMonitor();
         break;
       case 'back':
         return;

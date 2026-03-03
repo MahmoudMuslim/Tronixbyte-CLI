@@ -11,6 +11,7 @@ Future<void> generateFeature(
   bool needRoute = false,
   bool needTests = false,
   bool overwrite = false,
+  Map<String, String>? customImplementations,
 }) async {
   final projectName = await getProjectName();
   final activePath = getActiveProjectPath();
@@ -130,10 +131,8 @@ Future<void> generateFeature(
         'data',
         'repositories',
         '${name}_repository_impl.dart',
-      ): getRepositoryImplTemplate(
-        projectName,
-        namePascal,
-      ),
+      ): customImplementations?['repository_impl'] ??
+          getRepositoryImplTemplate(projectName, namePascal),
       p.join(featurePath, 'data', 'repositories', 'z_repositories.dart'):
           "export '${name}_repository_impl.dart';",
       p.join(
@@ -197,6 +196,17 @@ Future<void> generateFeature(
       if (needPresentation) "export 'presentation/z_presentation.dart';",
     ].join('\n'),
   };
+
+  // Add custom usecase implementations if any
+  if (customImplementations != null) {
+    customImplementations.forEach((key, content) {
+      if (key.startsWith('usecase_')) {
+        final ucName = key.replaceFirst('usecase_', '');
+        files[p.join(featurePath, 'domain', 'usecases', '$ucName.dart')] =
+            content;
+      }
+    });
+  }
 
   files.forEach((path, content) {
     final file = File(path);

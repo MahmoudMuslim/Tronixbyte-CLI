@@ -1,4 +1,7 @@
 export 'biometric_auth_wizard.dart';
+export 'design_system_studio.dart';
+export 'figma_sync.dart';
+export 'flavor_generator.dart';
 export 'git_flow_manager.dart';
 export 'golden_designer.dart';
 export 'golden_manager.dart';
@@ -18,6 +21,9 @@ export 'publisher_assistant.dart';
 export 'release_note_generator.dart';
 export 'screenshot_automator.dart';
 export 'screenshot_comparator.dart';
+export 'shared_component_gallery.dart';
 export 'ssl_pinning_wizard.dart';
 export 'store_metadata_auditor.dart';
+export 'tech_debt_monitor.dart';
 export 'velocity_predictor.dart';
+export 'whitelabel_manager.dart';

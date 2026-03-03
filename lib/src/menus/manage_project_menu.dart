@@ -10,6 +10,9 @@ Future<void> manageProjectMenu() async {
       'Run Full Project Setup (All-in-one Initialization)',
       'Feature Management (Create/Delete/Rename/Enhance)',
       'Elite Module Marketplace (Plug-and-Play)',
+      'Enterprise Whitelabeling Wizard',
+      'Figma Design System Sync',
+      'Dynamic Widget Catalog (Gallery)',
       'Elite Monorepo Manager (Multi-Package)',
       'Interactive Git Flow Manager',
       'App Screenshot Automator (Multi-Device)',
@@ -49,54 +52,63 @@ Future<void> manageProjectMenu() async {
         await runMarketplaceWizard();
         break;
       case '5':
-        await runMonorepoManager();
+        await runWhitelabelWizard();
         break;
       case '6':
-        await runGitFlowManager();
+        await runFigmaSync();
         break;
       case '7':
-        await setupScreenshotAutomation();
+        await runSharedComponentGallery();
         break;
       case '8':
-        await coreServicesMenu();
+        await runMonorepoManager();
         break;
       case '9':
-        await syncProject();
+        await runGitFlowManager();
         break;
       case '10':
-        await runConfigGeneratorMenu();
+        await setupScreenshotAutomation();
         break;
       case '11':
-        await manageDependencies();
+        await coreServicesMenu();
         break;
       case '12':
-        await buildRunnerMenu();
+        await syncProject();
         break;
       case '13':
-        await assetsAndL10nMenu();
+        await runConfigGeneratorMenu();
         break;
       case '14':
-        await buildAndReleaseMenu();
+        await manageDependencies();
         break;
       case '15':
-        await switchEnvironment();
+        await buildRunnerMenu();
         break;
       case '16':
-        await runEnvSecretWizard();
+        await assetsAndL10nMenu();
         break;
       case '17':
-        await generateFeaturesOverview();
+        await buildAndReleaseMenu();
         break;
       case '18':
-        await runVelocityPredictor();
+        await switchEnvironment();
         break;
       case '19':
-        await manageVersion();
+        await runEnvSecretWizard();
         break;
       case '20':
-        await maintenanceMenu();
+        await generateFeaturesOverview();
         break;
       case '21':
+        await runVelocityPredictor();
+        break;
+      case '22':
+        await manageVersion();
+        break;
+      case '23':
+        await maintenanceMenu();
+        break;
+      case '24':
         // Clear active project and re-run selection
         await InputHistoryManager.removeInput('active_project', activePath);
         await ensureProjectRoot();

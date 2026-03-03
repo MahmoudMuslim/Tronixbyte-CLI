@@ -69,4 +69,9 @@ class InputHistoryManager {
       return [];
     }
   }
+
+  static String? getRecentInput(String category) {
+    final inputs = getRecentInputs(category);
+    return inputs.isNotEmpty ? inputs.first : null;
+  }
 }

@@ -1,6 +1,6 @@
 import 'package:tools/tools.dart';
 
-Future<void> runCommand(
+Future<int> runCommand(
   String command,
   List<String> args, {
   String? loadingMessage,
@@ -12,6 +12,7 @@ Future<void> runCommand(
 
   if (loadingMessage != null) {
     try {
+      int exitCode = 0;
       await loadingSpinner(loadingMessage, () async {
         final result = await Process.run(
           command,
@@ -19,16 +20,19 @@ Future<void> runCommand(
           runInShell: true,
           workingDirectory: finalDir,
         );
-        if (result.exitCode != 0) {
+        exitCode = result.exitCode;
+        if (exitCode != 0) {
           stdoutData.add(result.stdout.toString());
           stderrData.add(result.stderr.toString());
           throw Exception('Command failed');
         }
       });
+      return exitCode;
     } catch (e) {
       if (stdoutData.isNotEmpty) print('\n$reset${stdoutData.join()}');
       if (stderrData.isNotEmpty) printError(stderrData.join());
       printError('Command failed with exit code 1');
+      return 1;
     }
   } else {
     final stopwatch = Stopwatch()..start();
@@ -50,5 +54,6 @@ Future<void> runCommand(
     if (exitCode != 0) {
       printError('Command failed with exit code $exitCode');
     }
+    return exitCode;
   }
 }

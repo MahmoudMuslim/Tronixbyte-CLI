@@ -36,6 +36,7 @@ void main(List<String> args) async {
             return;
           case 'audit':
             await runSecurityAudit();
+            await runLiveSecurityFeed();
             await runPerformanceAudit();
             return;
           case 'clean':
@@ -72,6 +73,7 @@ void main(List<String> args) async {
             await manageProjectMenu();
             break;
           case '3':
+          case 'help':
             _printHelp();
             break;
           case '4':

@@ -82,40 +82,6 @@ linter:
     - valid_regexps
 """;
 
-String getGitWorkflowTemplate() => """
-name: Flutter CI
-
-on:
-  push:
-    branches: [ main, master, develop ]
-  pull_request:
-    branches: [ main, master, develop ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Install Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          
-      - name: Install dependencies
-        run: flutter pub get
-        
-      - name: Run Build Runner
-        run: flutter pub run build_runner build --delete-conflicting-outputs
-        
-      - name: Check lints
-        run: flutter analyze
-        
-      - name: Run tests
-        run: flutter test
-""";
-
 String getGitignoreTemplate() => """
 # Flutter/Dart
 .dart_tool/

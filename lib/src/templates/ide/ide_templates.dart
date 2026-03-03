@@ -19,6 +19,24 @@ String getVSCodeExtensionsTemplate() {
 """;
 }
 
+String getFlavorGeneratorTemplate() {
+  return """
+flavors:
+dev:
+  name: "App Dev"
+  api_url: "https://dev.api.example.com"
+  bundle_id: "com.example.app.dev"
+stg:
+  name: "App Staging"
+  api_url: "https://stg.api.example.com"
+  bundle_id: "com.example.app.stg"
+prod:
+  name: "App"
+  api_url: "https://api.example.com"
+  bundle_id: "com.example.app"
+""";
+}
+
 String getFlavorConfigTemplate(String projectName) {
   return """
   flavorDimensions "default"
