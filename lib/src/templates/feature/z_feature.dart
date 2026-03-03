@@ -1,0 +1,9 @@
+export 'data_templates.dart';
+export 'domain_templates.dart';
+export 'feature_templates.dart';
+export 'injection_templates.dart';
+export 'logic_templates.dart';
+export 'mapper_templates.dart';
+export 'presentation_templates.dart';
+export 'route_templates.dart';
+export 'test_templates.dart';

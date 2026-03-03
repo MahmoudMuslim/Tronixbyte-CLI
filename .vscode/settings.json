@@ -1,0 +1,12 @@
+{
+  "dart.debugSdkLibraries": false,
+  "dart.debugExternalPackageLibraries": false,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "dart.previewFlutterUiGuides": true,
+  "dart.flutterHotReloadOnSave": "manual",
+  "dart.openDevTools": "flutter"
+}
