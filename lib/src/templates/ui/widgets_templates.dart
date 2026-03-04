@@ -43,7 +43,7 @@ class _AppErrorBoundaryState extends State<AppErrorBoundary> {
                 const SizedBox(height: 16),
                 Text('Something went wrong', style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 8),
-                Text(_errorMessage, textAlign: Center, style: const TextStyle(color: Colors.grey)),
+                Text(_errorMessage, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () => setState(() => _hasError = false),

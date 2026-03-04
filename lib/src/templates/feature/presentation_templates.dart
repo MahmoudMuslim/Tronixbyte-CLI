@@ -4,11 +4,11 @@ String getScreenTemplate(
   String logicClass,
   String type,
 ) {
-  String providerWrap = "";
+  String logicWrap = "";
   String bodyContent = "const ${namePascal}Body()";
 
   if (type == 'bloc' || type == 'cubit') {
-    providerWrap =
+    logicWrap =
         """
     BlocProvider(
       create: (context) => sl<$logicClass>(),
@@ -17,7 +17,7 @@ String getScreenTemplate(
       ),
     )""";
   } else if (type == 'getx') {
-    providerWrap =
+    logicWrap =
         """
     GetBuilder<$logicClass>(
       init: sl<$logicClass>(),
@@ -26,7 +26,7 @@ String getScreenTemplate(
       ),
     )""";
   } else if (type == 'provider') {
-    providerWrap =
+    logicWrap =
         """
     ChangeNotifierProvider(
       create: (_) => sl<$logicClass>(),
@@ -35,7 +35,7 @@ String getScreenTemplate(
       ),
     )""";
   } else {
-    providerWrap = "const AppScaffold(body: $bodyContent)";
+    logicWrap = "const AppScaffold(body: $bodyContent)";
   }
 
   return """
@@ -46,7 +46,7 @@ class ${namePascal}Screen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return $providerWrap;
+    return $logicWrap;
   }
 }
 """;

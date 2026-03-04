@@ -1,4 +1,9 @@
 final List<String> baseDeps = [
+  'cupertino_icons',
+  'skeletonizer',
+  'cached_network_image',
+  'flutter_secure_storage',
+  'permission_handler',
   'go_router',
   'get_it',
   'easy_localization',
@@ -33,6 +38,7 @@ final List<String> baseDevDeps = [
   'icons_launcher',
   'mocktail',
 ];
+final List<String> baseOverrideDeps = ['json_annotation'];
 
 final List<String> apiDeps = ['dio', 'retrofit', 'pretty_dio_logger'];
 final List<String> apiDevDeps = ['retrofit_generator', 'build_runner'];
@@ -52,7 +58,6 @@ final Map<String, List<String>> stateManagementDeps = {
   'getx': ['get_storage', 'get'],
   'provider': ['provider'],
 };
-
 final Map<String, List<String>> stateManagementDevDeps = {
   'bloc': ['bloc_test'],
   'cubit': ['bloc_test'],
@@ -62,7 +67,6 @@ final Map<String, List<String>> stateManagementDevDeps = {
 };
 
 final List<String> firebaseBaseDeps = ['firebase_core'];
-
 final Map<String, String> firebaseServices = {
   'firebase_core': 'Core Engine (Mandatory)',
   'firebase_auth': 'Identity & Auth',

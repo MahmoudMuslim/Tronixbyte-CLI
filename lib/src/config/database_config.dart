@@ -81,10 +81,11 @@ Future<void> configureDatabase() async {
     if (!dbToolsDir.existsSync()) dbToolsDir.createSync(recursive: true);
 
     final actualDbName = dbFileName ?? 'app_database.db';
+    final databaseAppFilePath = p.join(dbDir.path, 'app_database.dart');
 
     // Generate Database files
     File(
-      p.join(dbDir.path, 'app_database.dart'),
+      databaseAppFilePath,
     ).writeAsStringSync(getDatabaseTemplate(driftAnnotation));
 
     File(p.join(dbConDir.path, 'native.dart')).writeAsStringSync(
@@ -111,7 +112,7 @@ Future<void> configureDatabase() async {
     ).writeAsStringSync(getDatabaseToolTemplate());
     File(
       p.join(activePath, 'build.yaml'),
-    ).writeAsStringSync(getDatabaseBuildYamlTemplate());
+    ).writeAsStringSync(getDatabaseBuildYamlTemplate(databaseAppFilePath));
 
     final webDir = Directory(p.join(activePath, 'web'));
     if (!webDir.existsSync()) webDir.createSync(recursive: true);

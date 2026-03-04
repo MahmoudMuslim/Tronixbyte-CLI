@@ -16,7 +16,10 @@ Future<void> configureApi(String projectName) async {
       apiDir.createSync(recursive: true);
     }
 
-    // 1. Core API Files
+    // 1. Create .env files if network is enabled
+    _createEnvFiles(activePath);
+
+    // 2. Core API Files
     File(
       p.join(apiDir.path, 'dio_factory.dart'),
     ).writeAsStringSync(getDioFactoryTemplate(projectName));
@@ -30,7 +33,7 @@ Future<void> configureApi(String projectName) async {
       p.join(apiDir.path, 'api_constants.dart'),
     ).writeAsStringSync(getApiConstantsTemplate(projectName));
 
-    // 2. Conditional Encryption Files
+    // 3. Conditional Encryption Files
     String exports =
         "export 'dio_factory.dart';\nexport 'app_interceptor.dart';\nexport 'api_service.dart';\nexport 'api_constants.dart';";
 
@@ -46,7 +49,7 @@ Future<void> configureApi(String projectName) async {
       printInfo('Generated Encryption Service and Interceptor.');
     }
 
-    // 3. Update Barrel
+    // 4. Update Barrel
     File(
       p.join(apiDir.path, 'z_api.dart'),
     ).writeAsStringSync(exports, mode: FileMode.write);
@@ -63,4 +66,25 @@ Future<void> configureApi(String projectName) async {
   printInfo(
     '👉 Remember to add "sl.registerLazySingleton(() => EncryptionInterceptor());" to injection if used.',
   );
+}
+
+void _createEnvFiles(String activePath) {
+  final envs = {
+    '.env.dev':
+        'BASE_URL=https://dev-api.example.com/\nDEBUG=true\nENV=development',
+    '.env.stg':
+        'BASE_URL=https://stg-api.example.com/\nDEBUG=true\nENV=staging',
+    '.env.prod':
+        'BASE_URL=https://api.example.com/\nDEBUG=false\nENV=production',
+    '.env':
+        'BASE_URL=https://dev-api.example.com/\nDEBUG=true\nENV=development',
+  };
+
+  envs.forEach((path, content) {
+    final file = File(p.join(activePath, path));
+    if (!file.existsSync()) {
+      file.writeAsStringSync(content);
+      printInfo('Generated: $path');
+    }
+  });
 }

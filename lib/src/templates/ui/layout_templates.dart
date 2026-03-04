@@ -45,26 +45,21 @@ String getAppShimmerTemplate(String projectName) =>
 import 'package:$projectName/$projectName.dart';
 
 class AppShimmer extends StatelessWidget {
-  final double width;
-  final double height;
-  final double borderRadius;
+  final Widget? child;
+  final bool isLoading;
 
   const AppShimmer({
     super.key,
-    required this.width,
-    required this.height,
-    this.borderRadius = 8,
+    this.child,
+    this.isLoading=true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: context.isDarkMode ? Colors.white.withOpacity(0.05) : Colors.grey[300],
-        borderRadius: BorderRadius.circular(borderRadius),
-      ));
+    return Skeletonizer(
+    enabled: isLoading,
+    child: child ?? const SizedBox(),
+    );
   }
 }
 """;

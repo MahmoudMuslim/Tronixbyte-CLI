@@ -109,7 +109,7 @@ Future<void> generateFeature(
     p.join(
       featurePath,
       'manager',
-      'z_$logicDir.dart',
+      'z_manager.dart',
     ): "export '${name}_${logicDir == 'controller' ? 'controller' : (logicDir == 'provider' ? 'provider' : (logicDir == 'bloc' ? 'bloc' : 'cubit'))}.dart';",
 
     // Data layer

@@ -26,22 +26,25 @@ Future<void> configureNetwork(String projectName) async {
       );
       if (!networkDir.existsSync()) networkDir.createSync(recursive: true);
 
-      // 1. Generate ApiClient (Dio)
+      // 1. Create .env files
+      _createEnvFiles(activePath);
+
+      // 2. Generate ApiClient (Dio)
       final apiClientFile = File(p.join(apiDir.path, 'api_client.dart'));
       apiClientFile.writeAsStringSync(getApiClientTemplate(projectName));
       printInfo('Generated: ${apiClientFile.path}');
 
-      // 2. Generate ApiService (Retrofit)
+      // 3. Generate ApiService (Retrofit)
       final apiServiceFile = File(p.join(apiDir.path, 'api_service.dart'));
       apiServiceFile.writeAsStringSync(getApiServiceTemplate(projectName));
       printInfo('Generated: ${apiServiceFile.path}');
 
-      // 3. Generate Failures
+      // 4. Generate Failures
       final failureFile = File(p.join(errorDir.path, 'failures.dart'));
       failureFile.writeAsStringSync(getFailureTemplate(projectName));
       printInfo('Generated: ${failureFile.path}');
 
-      // 4. Generate Network Info
+      // 5. Generate Network Info
       final networkInfoFile = File(
         p.join(networkDir.path, 'network_info.dart'),
       );
@@ -72,4 +75,25 @@ void _updateBarrels(String activePath) {
   File(
     p.join(activePath, 'lib', 'core', 'network', 'z_network.dart'),
   ).writeAsStringSync("export 'network_info.dart';");
+}
+
+void _createEnvFiles(String activePath) {
+  final envs = {
+    '.env.dev':
+        'BASE_URL=https://dev-api.example.com/\nDEBUG=true\nENV=development',
+    '.env.stg':
+        'BASE_URL=https://stg-api.example.com/\nDEBUG=true\nENV=staging',
+    '.env.prod':
+        'BASE_URL=https://api.example.com/\nDEBUG=false\nENV=production',
+    '.env':
+        'BASE_URL=https://dev-api.example.com/\nDEBUG=true\nENV=development',
+  };
+
+  envs.forEach((path, content) {
+    final file = File(p.join(activePath, path));
+    if (!file.existsSync()) {
+      file.writeAsStringSync(content);
+      printInfo('Generated: $path');
+    }
+  });
 }

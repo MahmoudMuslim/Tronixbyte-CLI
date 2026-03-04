@@ -44,11 +44,11 @@ QueryExecutor openConnection() {
         // put the database file, called db.sqlite here, into the documents
         // folder for your app.
         final dbFolder = await getApplicationDocumentsDirectory();
-        final file = File(p.join(dbFolder.path, '\$name.db'));
+        final file = File(p.join(dbFolder.path, 'app_database.db'));
 
         if (!await file.exists()) {
           // Extract the pre-populated database file from assets
-          final blob = await rootBundle.load('assets/database/\$name.db');
+          final blob = await rootBundle.load('assets/database/app_database.db');
           final buffer = blob.buffer;
           await file.writeAsBytes(
             buffer.asUint8List(blob.offsetInBytes, blob.lengthInBytes),
@@ -80,7 +80,7 @@ QueryExecutor openConnection() {
       driftWorker: Uri.parse('drift_worker.js'),
       ${isDbInAssets ? """
       initializeDatabase: () async {
-        final data = await rootBundle.load('assets/database/\$name.db');
+        final data = await rootBundle.load('assets/database/app_database.db');
         return data.buffer.asUint8List();
       },
       """ : ""}
@@ -140,7 +140,8 @@ class CopyCompiledJs extends Builder {
 }
 """;
 
-String getDatabaseBuildYamlTemplate() => """
+String getDatabaseBuildYamlTemplate(String databaseFilePath) =>
+    """
 # This configures how `build_runner` and associated builders should behave.
 # For more information, see https://pub.dev/packages/build_config
 
@@ -160,7 +161,7 @@ targets:
         # These options change how drift generates code
         options:
           databases:
-            default: lib/core/database/app_database.dart
+            default: $databaseFilePath
           # Drift analyzes SQL queries at compile-time. For this purpose, it needs to know which sqlite3
           # features will be available. The sqlite3 package enables fts5 by default, so we can depend
           # on that.

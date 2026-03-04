@@ -115,6 +115,6 @@ void _updateBarrels(String projectName, String activePath) {
 
   // 5. Project Root Barrel
   File(p.join(activePath, 'lib', '$projectName.dart')).writeAsStringSync(
-    "export 'injection.dart';\nexport 'main.dart';\nexport 'app.dart';\nexport 'src/z_src.dart';\nexport 'core/z_core.dart';\nexport 'shared/z_shared.dart';",
+    "export 'injection.dart';\nexport 'main.dart';\nexport 'app.dart';\nexport 'src/z_src.dart';",
   );
 }

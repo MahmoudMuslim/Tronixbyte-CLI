@@ -1,5 +1,5 @@
-import 'package:tools/tools.dart';
 import 'package:path/path.dart' as p;
+import 'package:tools/tools.dart';
 
 Future<void> runFullSetup() async {
   printSection('Elite Full Project Initialization');
@@ -86,19 +86,15 @@ Future<void> runFullSetup() async {
 
   final List<String> currentDeps = [
     ...baseDeps,
-    'cupertino_icons',
-    'shimmer',
-    'cached_network_image',
-    'flutter_secure_storage',
-    'permission_handler',
     ...?stateManagementDeps[stateType],
   ];
 
   final List<String> currentDevDeps = [
     ...baseDevDeps,
-    'import_sorter',
     ...?stateManagementDevDeps[stateType],
   ];
+
+  final List<String> currentOverrideDeps = [...baseOverrideDeps];
 
   await runCommand('flutter', [
     'pub',
@@ -111,6 +107,11 @@ Future<void> runFullSetup() async {
     '--dev',
     ...currentDevDeps,
   ], loadingMessage: 'Installing dev dependencies');
+  await runCommand('flutter', [
+    'pub',
+    'add',
+    ...currentOverrideDeps.map((e) => 'override:$e '),
+  ], loadingMessage: 'Installing override dependencies');
 
   // 2. Directories
   printStep(
@@ -175,7 +176,7 @@ Future<void> runFullSetup() async {
     'lib/l10n/z_l10n.dart': '',
     'lib/injection.dart': '',
     'lib/$projectName.dart':
-        "export 'injection.dart';\nexport 'main.dart';\nexport 'app.dart';\nexport 'src/z_src.dart';\nexport 'core/z_core.dart';\nexport 'shared/widgets/z_widgets.dart';",
+        "export 'injection.dart';\nexport 'main.dart';\nexport 'app.dart';\nexport 'src/z_src.dart';",
     'lib/src/z_src.dart':
         "export 'dart.dart';\nexport 'flutter.dart' hide basicLocaleListResolution, timeDilation, State, Path;\nexport 'base.dart';\nexport 'global.dart' hide TextDirection;",
     'lib/core/z_core.dart':
@@ -192,14 +193,6 @@ Future<void> runFullSetup() async {
           if (e.contains('retrofit')) return "export 'package:$e/$e.dart' hide Headers,Parser;";
           return "export 'package:$e/$e.dart';";
         }).join('\n')}",
-    '.env.dev':
-        'BASE_URL=https://dev-api.example.com/\nDEBUG=true\nENV=development',
-    '.env.stg':
-        'BASE_URL=https://stg-api.example.com/\nDEBUG=true\nENV=staging',
-    '.env.prod':
-        'BASE_URL=https://api.example.com/\nDEBUG=false\nENV=production',
-    '.env':
-        'BASE_URL=https://dev-api.example.com/\nDEBUG=true\nENV=development',
     'analysis_options.yaml': getAnalysisOptionsTemplate(),
     '.gitignore': getGitignoreTemplate(),
     '.vscode/settings.json': getVSCodeSettingsTemplate(),
@@ -299,11 +292,25 @@ Future<void> runFullSetup() async {
     totalSteps,
     'Generating initial Splash & Home structure...',
   );
+  bool needData =
+      (ask('Add Data Layer for Splash? (y/n)') ?? 'n').toLowerCase() == 'y';
+  bool needDomain =
+      (ask('Add Domain Layer for Splash? (y/n)') ?? 'n').toLowerCase() == 'y';
   await generateFeature(
     'splash',
     stateType,
     needPresentation: true,
     needRoute: true,
+    needData: needData,
+    needDomain: needDomain,
+  );
+  await generateFeature(
+    'home',
+    stateType,
+    needPresentation: true,
+    needRoute: true,
+    needData: true,
+    needDomain: true,
   );
 
   // Final synchronization
