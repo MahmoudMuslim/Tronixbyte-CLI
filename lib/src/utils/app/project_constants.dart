@@ -1,3 +1,5 @@
+import 'package:tools/tools.dart';
+
 final List<String> baseDeps = [
   'cupertino_icons',
   'skeletonizer',
@@ -89,3 +91,19 @@ final Map<String, String> firebaseServices = {
   'firebase_remote_config': 'Dynamic App Configuration',
   'firebase_app_check': 'Security & Attestation',
 };
+
+String? getStateType(bool showBack) {
+  final options = ['BLoC', 'Cubit', 'Riverpod', 'GetX', 'Provider'];
+  final typeChoice = selectOption(
+    'Select Default State Management',
+    options,
+    showBack: showBack,
+  );
+  String stateType = 'cubit';
+  if (typeChoice == '1') stateType = 'bloc';
+  if (typeChoice == '3') stateType = 'riverpod';
+  if (typeChoice == '4') stateType = 'getx';
+  if (typeChoice == '5') stateType = 'provider';
+  if (typeChoice == null) printWarning('Invalid choice. Defaulting to Cubit.');
+  return stateType;
+}

@@ -1,10 +1,13 @@
 import 'package:path/path.dart' as p;
 import 'package:tools/tools.dart';
 
-Future<void> configureUi(String projectName) async {
+Future<void> configureUi(String projectName, String stateType) async {
   printSection('UI & Extensions Configuration');
 
   final activePath = getActiveProjectPath();
+
+  List<String> states = ['bloc', 'cubit'];
+  bool requiredBO = states.contains(stateType);
 
   await loadingSpinner(
     'Scaffolding UI foundations, routes, and utilities',
@@ -22,13 +25,16 @@ Future<void> configureUi(String projectName) async {
         getContextExtensionsTemplate(projectName),
       );
       printInfo('Generated: ${contextExtensionsFile.path}');
-
-      // 2. Generate Bloc Observer
-      final blocObserverFile = File(
-        p.join(utilsDir.path, 'bloc_observer.dart'),
-      );
-      blocObserverFile.writeAsStringSync(getBlocObserverTemplate(projectName));
-      printInfo('Generated: ${blocObserverFile.path}');
+      if (requiredBO) {
+        // 2. Generate Bloc Observer
+        final blocObserverFile = File(
+          p.join(utilsDir.path, 'bloc_observer.dart'),
+        );
+        blocObserverFile.writeAsStringSync(
+          getBlocObserverTemplate(projectName),
+        );
+        printInfo('Generated: ${blocObserverFile.path}');
+      }
 
       // 3. Generate App Config
       final appConfigFile = File(p.join(utilsDir.path, 'app_config.dart'));
@@ -79,7 +85,7 @@ Future<void> configureUi(String projectName) async {
       printInfo('Generated: ${routerFile.path}');
 
       // Update barrel files
-      _updateBarrels(projectName, activePath);
+      _updateBarrels(projectName, activePath, requiredBO);
     },
   );
 
@@ -88,12 +94,12 @@ Future<void> configureUi(String projectName) async {
   );
 }
 
-void _updateBarrels(String projectName, String activePath) {
+void _updateBarrels(String projectName, String activePath, bool requireBO) {
   // 1. Utils Barrel
   File(
     p.join(activePath, 'lib', 'core', 'utils', 'z_utils.dart'),
   ).writeAsStringSync(
-    "export 'context_extensions.dart';\nexport 'bloc_observer.dart';\nexport 'app_config.dart';",
+    "export 'context_extensions.dart';\n${requireBO ? "export 'bloc_observer.dart';\n" : ''}export 'app_config.dart';",
   );
 
   // 2. Widgets Barrel

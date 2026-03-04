@@ -18,34 +18,8 @@ Future<void> promptGenerateFeature() async {
     if (!overwrite) return;
   }
 
-  final options = ['BLoC', 'Cubit', 'Riverpod', 'GetX', 'Provider'];
-  final typeChoice = selectOption(
-    'Select State Management Type',
-    options,
-    showBack: false,
-  );
-
-  String type;
-  switch (typeChoice) {
-    case '1':
-      type = 'bloc';
-      break;
-    case '2':
-      type = 'cubit';
-      break;
-    case '3':
-      type = 'riverpod';
-      break;
-    case '4':
-      type = 'getx';
-      break;
-    case '5':
-      type = 'provider';
-      break;
-    default:
-      printWarning('Invalid choice. Defaulting to Cubit.');
-      type = 'cubit';
-  }
+  final stateType = getStateType(true);
+  if (stateType == 'back' || stateType == null) return;
 
   // Define Fields
   printSection('Field Definition (Optional)');
@@ -83,7 +57,7 @@ Future<void> promptGenerateFeature() async {
 
   await generateFeature(
     name,
-    type,
+    stateType,
     fields: fields,
     needData: needData,
     needDomain: needDomain,

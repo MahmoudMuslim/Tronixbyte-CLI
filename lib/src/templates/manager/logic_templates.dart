@@ -18,14 +18,13 @@ String _getThemeProviderTemplate(String projectName) =>
     """
 import 'package:$projectName/$projectName.dart';
 part 'theme_state.dart';
+part 'theme_state.g.dart';
 
 class ThemeProvider extends ChangeNotifier {
-final ThemeState _themeState = ThemeState();
+final ThemeState _themeState = ThemeState(themeMode: ThemeMode.system);
 
-bool get isDarkMode => _themeState.isDarkMode;
-
-void setThemeMode(ThemeMode mode) {
-  _themeState.isDarkMode = !_themeState.isDarkMode;
+void updateThemeMode(ThemeMode themeMode) {
+  _themeState.themeMode = themeMode;
   notifyListeners();
 }
 }
@@ -34,24 +33,24 @@ void setThemeMode(ThemeMode mode) {
 String _getThemeRiverpodTemplate(String projectName) =>
     """
 import 'package:$projectName/$projectName.dart';
+part 'theme_state.dart';
+part 'theme_state.g.dart';
 
-final themeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
+final themeProvider = Provider<ThemeState>((ref) => ThemeState(themeMode: ThemeMode.system));
 """;
 
 String _getThemeGetxTemplate(String projectName) =>
     """
 import 'package:$projectName/$projectName.dart';
-
 part 'theme_state.dart';
+part 'theme_state.g.dart';
 
 class ThemeController extends GetxController {
-final ThemeState _themeState = ThemeState();
+final ThemeState _themeState = ThemeState(themeMode: ThemeMode.system);
 
-bool get isDarkMode => _themeState.isDarkMode;
-
-void toggleTheme() {
-  _themeState.isDarkMode = !_themeState.isDarkMode;
-  Get.changeThemeMode(_themeState.isDarkMode ? ThemeMode.dark : ThemeMode.light);
+void updateTheme(ThemeMode themeMode) {
+  _themeState.themeMode = themeMode;
+  Get.changeThemeMode(themeMode);
 }
 }
 """;
@@ -59,19 +58,19 @@ void toggleTheme() {
 String _getThemeCubitTemplate(String projectName) =>
     """
 import 'package:$projectName/$projectName.dart';
-
 part 'theme_state.dart';
+part 'theme_state.g.dart';
 
 class ThemeCubit extends HydratedCubit<ThemeState> {
 ThemeCubit() : super(const ThemeState(themeMode: ThemeMode.system));
 
-void updateTheme(ThemeMode mode) => emit(ThemeState(themeMode: mode));
+void updateTheme(ThemeMode themMode) => emit(ThemeState(themeMode: themMode));
 
 @override
-ThemeState? fromJson(Map<String, dynamic> json) => ThemeState.fromMap(json);
+ThemeState? fromJson(Map<String, dynamic> json) => ThemeState.fromJson(json);
 
 @override
-Map<String, dynamic>? toJson(ThemeState state) => state.toMap();
+Map<String, dynamic>? toJson(ThemeState state) => state.toJson();
 }
 """;
 
@@ -79,10 +78,64 @@ String getLocaleTemplate(String projectName, String type) {
   switch (type) {
     case 'bloc':
     case 'cubit':
-      return """
+      return _getLocaleCubitTemplate(projectName);
+    case 'getx':
+      return _getLocaleGetxTemplate(projectName);
+    case 'riverpod':
+      return _getLocaleRiverpodTemplate(projectName);
+    case 'provider':
+      return _getLocaleProviderTemplate(projectName);
+    default:
+      return "";
+  }
+}
+
+String _getLocaleProviderTemplate(String projectName) =>
+    """
+import 'package:$projectName/$projectName.dart';
+part 'locale_state.dart';
+part 'locale_state.g.dart';
+
+class LocaleProvider extends ChangeNotifier {
+final LocaleState _localeState = LocaleState(locale: Locale('en'));
+
+  void updateLocale(Locale locale,BuildContext context) {
+    _localeState.locale = locale;
+    EasyLocalization.of(context)?.setLocale(locale);
+  }
+}
+""";
+
+String _getLocaleRiverpodTemplate(String projectName) =>
+    """
+import 'package:$projectName/$projectName.dart';
+part 'locale_state.dart';
+part 'locale_state.g.dart';
+final themeProvider = Provider<ThemeState>((ref) => ThemeState(themeMode: ThemeMode.system));
+""";
+
+String _getLocaleGetxTemplate(String projectName) =>
+    """
+import 'package:$projectName/$projectName.dart';
+part 'locale_state.dart';
+part 'locale_state.g.dart';
+
+class LocaleController extends GetxController {
+  final LocaleState _localeState = LocaleState(locale: Locale('en'));
+
+  void updateLocale(Locale locale,BuildContext context) {
+    _localeState.locale = locale;
+    EasyLocalization.of(context)?.setLocale(locale);
+  }
+}
+""";
+
+String _getLocaleCubitTemplate(String projectName) =>
+    """
 import 'package:$projectName/$projectName.dart';
 
 part 'locale_state.dart';
+part 'locale_state.g.dart';
 
 class LocaleCubit extends HydratedCubit<LocaleState> {
   LocaleCubit() : super(const LocaleState(locale: Locale('en')));
@@ -90,133 +143,58 @@ class LocaleCubit extends HydratedCubit<LocaleState> {
   void updateLocale(Locale locale) => emit(LocaleState(locale: locale));
 
   @override
-  LocaleState? fromJson(Map<String, dynamic> json) => LocaleState.fromMap(json);
+  LocaleState? fromJson(Map<String, dynamic> json) => LocaleState.fromJson(json);
 
   @override
-  Map<String, dynamic>? toJson(LocaleState state) => state.toMap();
+  Map<String, dynamic>? toJson(LocaleState state) => state.toJson();
 }
 """;
-    case 'getx':
-      return """
-import 'package:$projectName/$projectName.dart';
-part 'locale_state.dart';
-
-class LocaleController extends GetxController {
-  final LocaleState _localeState = LocaleState();
-
-  void changeLocale(Locale locale,BuildContext context) {
-    _localeState.locale = locale;
-    EasyLocalization.of(context)?.setLocale(locale);
-  }
-}
-""";
-    case 'provider':
-      return """
-import 'package:$projectName/$projectName.dart';
-part 'locale_state.dart';
-
-class LocaleProvider extends ChangeNotifier {
-  final LocaleState _localeState = LocaleState();
-
-  void changeLocale(Locale locale,BuildContext context) {
-    _localeState.locale = locale;
-    EasyLocalization.of(context)?.setLocale(locale);
-  }
-}
-""";
-    default:
-      return "";
-  }
-}
-
-String getThemeStateGenericTemplate(String stateType) {
-  return """
-part of 'theme_$stateType.dart';
-
-class ThemeState extends Equatable {
-  ${stateType == 'getx' ? """
-  final _isDarkMode = false.obs;
-  bool get isDarkMode => _isDarkMode.value;
-  set isDarkMode (bool value) => _isDarkMode.value = value;
-  """ : """
-  ThemeMode themeMode = ThemeMode.system;
-  """}
-
-  @override
-  List<Object?> get props => [themeMode];
-
-  Map<String, dynamic> toMap() => {'themeMode': themeMode.index};
-  
-  factory ThemeState.fromMap(Map<String, dynamic> map) {
-    return ThemeState(
-      themeMode: ThemeMode.values[map['themeMode'] ?? 0]);
-  }  
-}
-""";
-}
 
 String getThemeStateTemplate(String stateType) =>
     """
 part of 'theme_$stateType.dart';
 
+@JsonSerializable()
+@generateProps
 class ThemeState extends Equatable {
-  final ThemeMode themeMode;
-  const ThemeState({required this.themeMode});
-
-  @override
-  List<Object?> get props => [themeMode];
-
-  Map<String, dynamic> toMap() => {'themeMode': themeMode.index};
-  
-  factory ThemeState.fromMap(Map<String, dynamic> map) {
-    return ThemeState(
-      themeMode: ThemeMode.values[map['themeMode'] ?? 0]);
-  }
-}
-""";
-
-String getLocaleStateGenericTemplate(String stateType) {
-  return """
-part of 'locale_$stateType.dart';
-
-class LocaleState extends Equatable {
 ${stateType == 'getx' ? """
-  final Locale _locale = Locale('en').obs;
-  Locale get locale => _locale.value;
-  set locale (Locale value) => _locale.value = value;
-  """ : """
-  Locale locale = Locale('en');
-  """}
+  final Rx<ThemeMode> _themeMode;
+  const ThemeState({required ThemeMode themeMode}):this._themeMode = themeMode.obs;
   
-  @override
-  List<Object?> get props => [locale];
+  ThemeMode get themeMode => _themeMode.value;
+  set themeMode(ThemeMode value) => _themeMode.value = value;
+  """ : """
+  final ThemeMode themeMode = ThemeMode.system;
+  const ThemeState({required this.themeMode});
+  """}
 
-  Map<String, dynamic> toMap() => {'languageCode': locale.languageCode};
+  List<Object?> get props => _\$props;
 
-  factory LocaleState.fromMap(Map<String, dynamic> map) {
-    return LocaleState(
-      locale: Locale(map['languageCode'] ?? 'en'));
-  }
+  factory ThemeState.fromJson(Map<String, dynamic> json) => _\$ThemeStateFromJson(json);
+  Map<String, dynamic> toJson() => _\$ThemeStateToJson(this);
 }
 """;
-}
-
 String getLocaleStateTemplate(String stateType) =>
     """
 part of 'locale_$stateType.dart';
 
+@JsonSerializable()
+@generateProps
 class LocaleState extends Equatable {
+${stateType == 'getx' ? """
+  final Rx<Locale> _locale;
+  const LocaleState({required Locale locale}):this._locale = locale.obs;
+  
+  Locale get locale => _locale.value;
+  set locale(Locale value) => _locale.value = value;
+  """ : """
   final Locale locale;
   const LocaleState({required this.locale});
+  """}
 
-  @override
-  List<Object?> get props => [locale];
+  List<Object?> get props => _\$props;
 
-  Map<String, dynamic> toMap() => {'languageCode': locale.languageCode};
-
-  factory LocaleState.fromMap(Map<String, dynamic> map) {
-    return LocaleState(
-      locale: Locale(map['languageCode'] ?? 'en'));
-  }
+  factory LocaleState.fromJson(Map<String, dynamic> json) => _\$LocaleStateFromJson(json);
+  Map<String, dynamic> toJson() => _\$LocaleStateToJson(this);
 }
 """;

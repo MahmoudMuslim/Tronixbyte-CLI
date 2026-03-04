@@ -33,7 +33,9 @@ Future<void> runConfigGeneratorMenu() async {
 
     switch (choice) {
       case '1':
-        await configureUi(projectName);
+        String? stateType = getStateType(true);
+        if (stateType == 'back' || stateType == null) break;
+        await configureUi(projectName, stateType);
         break;
       case '2':
         await configureApi(projectName);
@@ -51,30 +53,14 @@ Future<void> runConfigGeneratorMenu() async {
         await configureShorebird();
         break;
       case '7':
-        final stateChoice = selectOption(
-          'Select State Management for Theme/Locale',
-          ['BLoC', 'Cubit', 'Riverpod', 'GetX', 'Provider'],
-          showBack: false,
-        );
-        String stateType = 'cubit';
-        if (stateChoice == '1') stateType = 'bloc';
-        if (stateChoice == '3') stateType = 'riverpod';
-        if (stateChoice == '4') stateType = 'getx';
-        if (stateChoice == '5') stateType = 'provider';
+        String? stateType = getStateType(true);
+        if (stateType == 'back' || stateType == null) break;
         await configureThemeAndLocale(projectName, stateType);
         break;
       case '8':
-        final stateChoiceInj = selectOption(
-          'Select State Management for Injection Context',
-          ['BLoC', 'Cubit', 'Riverpod', 'GetX', 'Provider'],
-          showBack: false,
-        );
-        String stateTypeInj = 'cubit';
-        if (stateChoiceInj == '1') stateTypeInj = 'bloc';
-        if (stateChoiceInj == '3') stateTypeInj = 'riverpod';
-        if (stateChoiceInj == '4') stateTypeInj = 'getx';
-        if (stateChoiceInj == '5') stateTypeInj = 'provider';
-        await configureInjection(projectName, stateTypeInj);
+        String? stateType = getStateType(true);
+        if (stateType == 'back' || stateType == null) break;
+        await configureInjection(projectName, stateType);
         break;
       case '9':
         await configureNativeSplash();

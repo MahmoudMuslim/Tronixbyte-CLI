@@ -16,36 +16,9 @@ Future<void> runFullSetup() async {
     return;
   }
 
-  final options = ['BLoC', 'Cubit', 'Riverpod', 'GetX', 'Provider'];
-  final typeChoice = selectOption(
-    'Select Default State Management',
-    options,
-    showBack: true,
-  );
+  String? stateType = getStateType(true);
 
-  if (typeChoice == 'back' || typeChoice == null) return;
-
-  String stateType;
-  switch (typeChoice) {
-    case '1':
-      stateType = 'bloc';
-      break;
-    case '2':
-      stateType = 'cubit';
-      break;
-    case '3':
-      stateType = 'riverpod';
-      break;
-    case '4':
-      stateType = 'getx';
-      break;
-    case '5':
-      stateType = 'provider';
-      break;
-    default:
-      printWarning('Invalid choice. Defaulting to Cubit.');
-      stateType = 'cubit';
-  }
+  if (stateType == 'back' || stateType == null) return;
 
   printSection('Individual Module Selection');
   final enableNetwork =
@@ -158,13 +131,13 @@ Future<void> runFullSetup() async {
         '{\n  "app_title": "${projectName[0].toUpperCase()}${projectName.substring(1)}"\n}',
     'lib/l10n/z_l10n.dart': "export 'locale_keys.g.dart';",
     'lib/icons.dart': getIconsTemplate(),
-    'lib/main.dart': getMainTemplate(projectName, stateType),
+    'lib/main.dart': getMainTemplate(projectName, enableNetwork, stateType),
     'lib/app.dart': getMainAppTemplate(projectName, stateType),
     'lib/core/constants/z_constants.dart': '',
     'lib/$projectName.dart':
         "export 'injection.dart';\nexport 'main.dart';\nexport 'app.dart';\nexport 'src/z_src.dart';",
     'lib/src/z_src.dart':
-        "export 'dart.dart';\nexport 'flutter.dart' hide basicLocaleListResolution,  Path;\nexport 'base.dart';\nexport 'global.dart' hide TextDirection, Context;",
+        "export 'dart.dart'${stateType == 'riverpod' ? ' hide AsyncError' : ''};\nexport 'flutter.dart' hide basicLocaleListResolution,  Path;\nexport 'base.dart';\nexport 'global.dart' hide TextDirection, Context;",
     'lib/core/z_core.dart':
         "export 'constants/z_constants.dart';\nexport 'theme/z_theme.dart';\nexport 'locale/z_locale.dart';\nexport 'routes/z_routes.dart';\nexport 'utils/z_utils.dart';",
     'lib/src/dart.dart':
@@ -211,7 +184,7 @@ Future<void> runFullSetup() async {
     totalSteps,
     'Configuring UI foundations & Extensions...',
   );
-  await configureUi(projectName);
+  await configureUi(projectName, stateType);
 
   // 6. Network foundation
   if (enableNetwork) {

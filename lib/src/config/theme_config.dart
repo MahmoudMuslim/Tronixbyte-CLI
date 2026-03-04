@@ -28,13 +28,7 @@ Future<void> configureThemeAndLocale(
       printInfo('Generated: ${themeFile.path}');
 
       final themeStateFile = File(p.join(themeDir.path, 'theme_state.dart'));
-      if (stateType == 'bloc' || stateType == 'cubit') {
-        themeStateFile.writeAsStringSync(getThemeStateTemplate(stateType));
-      } else {
-        themeStateFile.writeAsStringSync(
-          getThemeStateGenericTemplate(stateType),
-        );
-      }
+      themeStateFile.writeAsStringSync(getThemeStateTemplate(stateType));
       printInfo('Generated: ${themeStateFile.path}');
 
       // 2. Generate App Theme (Static styles)
@@ -57,13 +51,8 @@ Future<void> configureThemeAndLocale(
       printInfo('Generated: ${localeFile.path}');
 
       final localeStateFile = File(p.join(localeDir.path, 'locale_state.dart'));
-      if (stateType == 'bloc' || stateType == 'cubit') {
-        localeStateFile.writeAsStringSync(getLocaleStateTemplate(stateType));
-      } else {
-        localeStateFile.writeAsStringSync(
-          getLocaleStateGenericTemplate(stateType),
-        );
-      }
+      localeStateFile.writeAsStringSync(getLocaleStateTemplate(stateType));
+
       printInfo('Generated: ${localeStateFile.path}');
 
       final localeBarrelFile = File(
@@ -88,7 +77,11 @@ String _getLogicDir(String stateType) {
       return 'cubit';
     case 'getx':
       return 'controller';
-    default:
+    case 'riverpod':
+      return 'riverpod';
+    case 'provider':
       return 'provider';
+    default:
+      return 'cubit';
   }
 }

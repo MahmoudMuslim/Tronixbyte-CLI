@@ -1,27 +1,30 @@
-String getMainTemplate(String projectName, String stateType) =>
+String getMainTemplate(
+  String projectName,
+  bool enableNetwork,
+  String stateType,
+) =>
     """
 import 'package:$projectName/$projectName.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Load Environment Variables
-  await dotenv.load(fileName: ".env");
+  ${enableNetwork ? """// Load Environment Variables
+  await dotenv.load(fileName: ".env");""" : ''}
 
   // Dependency Injection
   await setupInjection();
-
+${stateType == 'bloc' || stateType == 'cubit' ? """
   // Initialize Hydrated Storage
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
         ? HydratedStorageDirectory.web
         : HydratedStorageDirectory((await getApplicationDocumentsDirectory()).path));
+        """ : ""}
 
   // Initialize Localization
   await EasyLocalization.ensureInitialized();
-
-  // Bloc Observer
-  ${stateType == 'bloc' || stateType == 'cubit' ? 'Bloc.observer = MyBlocObserver();' : ''}
+  ${stateType == 'bloc' || stateType == 'cubit' ? """
+  // Bloc Observer\nBloc.observer = MyBlocObserver();""" : ''}
 
   runApp(
     ${stateType == 'riverpod' ? 'ProviderScope(child: ' : ''}
@@ -79,11 +82,9 @@ String getMainAppTemplate(String projectName, String stateType) {
       builder: (logic) => GetMaterialApp.router(
       title: LocaleKeys.app_title.tr(),
       debugShowCheckedModeBanner: false,
-      getPages: [], // Add your pages here
       routeInformationParser: router.routeInformationParser,
       routerDelegate: router.routerDelegate,
       routeInformationProvider: router.routeInformationProvider,
-      translations: null, // Using easy_localization instead
       locale: context.locale,
       fallbackLocale: const Locale('en'),
       theme: AppTheme.light,
@@ -281,6 +282,7 @@ class AppTheme {
         colorSchemeSeed: Colors.blue);
 }
 """;
+
 String getAppFlavorTemplate(String projectName, String flavor) {
   return """
 import 'package:$projectName/$projectName.dart';
