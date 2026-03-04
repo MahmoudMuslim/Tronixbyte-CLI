@@ -69,7 +69,7 @@ String getBodyTemplate(
           ${namePascal}Loading() => const AppShimmer(),
           ${namePascal}Error(message: final msg) => ErrorView(message: msg),
           ${namePascal}Success(data: final data) => _buildContent(context, data),
-          _ => const EmptyView(),
+          _ => const EmptyView(title:'$namePascal'),
         };
       },
     )""";
@@ -92,7 +92,7 @@ String getBodyTemplate(
       builder: (controller) {
         if (controller.isLoading) return const AppShimmer();
         if (controller.hasError) return ErrorView(message: controller.errorMessage);
-        if (controller.data == null) return const EmptyView();
+        if (controller.data == null) return const EmptyView(title:'$namePascal');
         return _buildContent(context, controller.data!);
       },
     )""";
@@ -103,7 +103,7 @@ String getBodyTemplate(
       builder: (context, provider, child) {
         if (provider.isLoading) return const AppShimmer();
         if (provider.hasError) return ErrorView(message: provider.errorMessage);
-        if (provider.data == null) return const EmptyView();
+        if (provider.data == null) return const EmptyView(title:'$namePascal');
         return _buildContent(context, provider.data!);
       },
     )""";

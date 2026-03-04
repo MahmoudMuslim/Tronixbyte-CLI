@@ -58,6 +58,7 @@ void main(List<String> args) async {
         final options = [
           'Create New Project (Flutter/Dart)',
           'Manage Existing Project (Clean Architecture Tools)',
+          'Clear History & Persistent Cache',
           'CLI Shortcuts & Documentation',
           'Exit',
         ];
@@ -73,10 +74,20 @@ void main(List<String> args) async {
             await manageProjectMenu();
             break;
           case '3':
+            final confirm =
+                (ask('Clear all history and project context? (y/n)') ?? 'n')
+                    .toLowerCase() ==
+                'y';
+            if (confirm) {
+              await InputHistoryManager.clearAll();
+              printSuccess('History cleared. Terminal context reset.');
+            }
+            break;
+          case '4':
           case 'help':
             _printHelp();
             break;
-          case '4':
+          case '5':
             print('\n$green$bold👋 Goodbye from Tronixbyte CLI!$reset\n');
             exit(0);
           case null:

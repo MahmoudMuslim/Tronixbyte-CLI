@@ -132,12 +132,14 @@ Future<void> runTechDebtMonitor() async {
   printBanner();
   printSection('Engineering Health Dashboard');
 
-  final color = healthScore > 85 ? green : (healthScore > 65 ? yellow : red);
+  final healthColor = healthScore > 85
+      ? green
+      : (healthScore > 65 ? yellow : red);
   final barLength = (healthScore / 2.5).toInt();
-  final bar = '█' * barLength;
+  final barLine = '█' * barLength;
 
   print('\n$blue$bold🏥 ARCHITECTURAL HEALTH SCORE$reset');
-  print('   $color$bar$reset ${healthScore.toStringAsFixed(1)}/100');
+  print('   $healthColor$barLine$reset ${healthScore.toStringAsFixed(1)}/100');
 
   if (deductions.isNotEmpty) {
     print('\n$yellow$bold⚠️  TOP DEBT CONTRIBUTORS:$reset');

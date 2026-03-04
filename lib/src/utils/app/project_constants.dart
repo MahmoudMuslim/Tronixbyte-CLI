@@ -9,8 +9,8 @@ final List<String> baseDeps = [
   'easy_localization',
   'intl',
   'equatable',
-  'json_annotation',
   'equatable_annotations',
+  'json_annotation',
   'path_provider',
   'path',
   'package_info_plus',
@@ -29,27 +29,32 @@ final List<String> baseDeps = [
 ];
 
 final List<String> baseDevDeps = [
-  'build_runner',
+  'build_runner:any',
   'json_serializable',
-  'equatable_gen',
-  'go_router_builder',
+  'equatable_gen:any',
+  'go_router_builder:any',
   'flutter_native_splash',
   'package_rename',
   'icons_launcher',
   'mocktail',
 ];
-final List<String> baseOverrideDeps = ['json_annotation'];
+final List<String> baseOverrideDeps = ['json_annotation:4.11.0'];
 
 final List<String> apiDeps = ['dio', 'retrofit', 'pretty_dio_logger'];
 final List<String> apiDevDeps = ['retrofit_generator', 'build_runner'];
 
 final List<String> databaseDeps = [
-  'drift',
-  'drift_flutter',
+  'drift:any',
+  'drift_flutter:any',
   'path_provider',
   'path',
 ];
-final List<String> databaseDevDeps = ['drift_dev', 'build_runner'];
+final List<String> databaseDevDeps = [
+  'drift_dev:any',
+  'build_runner',
+  'build:any',
+  'build_web_compilers:any',
+];
 
 final Map<String, List<String>> stateManagementDeps = {
   'bloc': ['flutter_bloc', 'hydrated_bloc', 'replay_bloc', 'bloc_concurrency'],

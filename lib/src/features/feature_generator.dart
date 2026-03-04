@@ -190,7 +190,7 @@ Future<void> generateFeature(
     // Feature Barrel
     p.join(featurePath, 'z_$name.dart'): [
       "export '${name}_injection.dart';",
-      "export 'manager/z_$logicDir.dart';",
+      "export 'manager/z_manager.dart';",
       if (needData) "export 'data/z_data.dart';",
       if (needDomain) "export 'domain/z_domain.dart';",
       if (needPresentation) "export 'presentation/z_presentation.dart';",

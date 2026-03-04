@@ -25,14 +25,14 @@ String getFeatureInjectionTemplate(
   // Repositories
   if (needData && needDomain) {
     injections.add(
-      "  sl.registerLazySingleton<${namePascal}Repository>(() => ${namePascal}RepositoryImpl(dataSource: sl(), networkInfo: sl()));",
+      "  sl.registerLazySingleton<${namePascal}Repository>(() => ${namePascal}RepositoryImpl(dataSource: sl()/*, networkInfo: sl()*/));",
     );
   }
 
   // Data sources
   if (needData) {
     injections.add(
-      "  sl.registerLazySingleton<${namePascal}DataSource>(() => ${namePascal}DataSourceImpl(sl()));",
+      "  sl.registerLazySingleton<${namePascal}DataSource>(() => ${namePascal}DataSourceImpl(/*sl()*/));",
     );
   }
 

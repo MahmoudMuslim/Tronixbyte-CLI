@@ -54,7 +54,7 @@ String getMainAppTemplate(String projectName, String stateType) {
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, state) {
           return MaterialApp.router(
-            title: 'app_title'.tr(),
+            title: LocaleKeys.app_title.tr(),
             debugShowCheckedModeBanner: false,
             routerConfig: router,
             localizationsDelegates: context.localizationDelegates,
@@ -77,7 +77,7 @@ String getMainAppTemplate(String projectName, String stateType) {
     return GetBuilder<ThemeController>(
       init: sl<ThemeController>(),
       builder: (logic) => GetMaterialApp.router(
-      title: 'app_title'.tr(),
+      title: LocaleKeys.app_title.tr(),
       debugShowCheckedModeBanner: false,
       getPages: [], // Add your pages here
       routeInformationParser: router.routeInformationParser,
@@ -102,7 +102,7 @@ String getMainAppTemplate(String projectName, String stateType) {
       builder: (context, ref, child) {
         final themeMode = ref.watch(themeProvider).state;
         return MaterialApp.router(
-          title: 'app_title'.tr(),
+          title: LocaleKeys.app_title.tr(),
           debugShowCheckedModeBanner: false,
           routerConfig: router,
           localizationsDelegates: context.localizationDelegates,
@@ -128,7 +128,7 @@ String getMainAppTemplate(String projectName, String stateType) {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp.router(
-            title: 'app_title'.tr(),
+            title: LocaleKeys.app_title.tr(),
             debugShowCheckedModeBanner: false,
             routerConfig: router,
             localizationsDelegates: context.localizationDelegates,
@@ -149,7 +149,7 @@ String getMainAppTemplate(String projectName, String stateType) {
     default:
       materialApp = """
     return MaterialApp.router(
-      title: 'app_title'.tr(),
+      title: LocaleKeys.app_title.tr(),
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       localizationsDelegates: context.localizationDelegates,

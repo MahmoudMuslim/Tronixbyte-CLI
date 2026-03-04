@@ -7,12 +7,14 @@ abstract class ${namePascal}DataSource {
 }
 
 class ${namePascal}DataSourceImpl implements ${namePascal}DataSource {
-  final ApiService apiService;
-  ${namePascal}DataSourceImpl(this.apiService);
+  // final ApiService apiService;
+  ${namePascal}DataSourceImpl();
 
   @override
   Future<${namePascal}Model> getData() async {
-    return await apiService.get$namePascal();
+     // TODO: implement getData
+    // return await apiService.getHome();
+    throw UnimplementedError();
   }
 }
 """;
@@ -50,25 +52,25 @@ import 'package:$projectName/$projectName.dart';
 
 class ${namePascal}RepositoryImpl implements ${namePascal}Repository {
   final ${namePascal}DataSource dataSource;
-  final NetworkInfo networkInfo;
+  // final NetworkInfo networkInfo;
   
   ${namePascal}RepositoryImpl({
     required this.dataSource,
-    required this.networkInfo,
+    // required this.networkInfo,
   });
 
   @override
-  Future<Either<Failure, ${namePascal}Entity>> getData() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final result = await dataSource.getData();
-        return Right(result);
-      } catch (e) {
-        return Left(ServerFailure(e.toString()));
-      }
-    } else {
-      return const Left(OfflineFailure('No Internet Connection'));
-    }
+  Future/*<Either<Failure, ${namePascal}Entity>>*/ getData() async {
+    // if (await networkInfo.isConnected) {
+    //   try {
+    //     final result = await dataSource.getData();
+    //     return Right(result);
+    //   } catch (e) {
+    //     return Left(ServerFailure(e.toString()));
+    //   }
+    // } else {
+    //   return const Left(OfflineFailure('No Internet Connection'));
+    // }
   }
 }
 """;

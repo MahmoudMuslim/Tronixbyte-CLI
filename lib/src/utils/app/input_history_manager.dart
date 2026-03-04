@@ -74,4 +74,11 @@ class InputHistoryManager {
     final inputs = getRecentInputs(category);
     return inputs.isNotEmpty ? inputs.first : null;
   }
+
+  static Future<void> clearAll() async {
+    final file = File(_logPath);
+    if (file.existsSync()) {
+      file.deleteSync();
+    }
+  }
 }

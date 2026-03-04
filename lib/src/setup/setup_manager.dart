@@ -63,7 +63,7 @@ Future<void> runFullSetup() async {
       (ask('Integrate Shorebird (Code Push)? (y/n)') ?? 'n').toLowerCase() ==
       'y';
   final enableBoilerplate =
-      (ask('Generate Shared UI Boilerplate Widgets? (y/n)') ?? 'n')
+      (ask('Generate Shared UI Boilerplate Widgets? (y/n)') ?? 'y')
           .toLowerCase() ==
       'y';
 
@@ -130,19 +130,12 @@ Future<void> runFullSetup() async {
     'lib/core/constants',
     'lib/core/theme/manager',
     'lib/core/locale/manager',
-    'lib/core/database',
-    'lib/core/api',
     'lib/core/routes',
     'lib/core/utils',
-    'lib/core/errors',
-    'lib/core/network',
     'lib/core/theme',
-    'lib/core/services',
     'lib/l10n',
     'lib/shared/widgets',
     'lib/features',
-    'lib/core/services/auth',
-    'lib/core/services/storage',
   ];
   for (final dir in baseDirs) {
     final d = Directory(p.join(activePath, dir));
@@ -163,34 +156,30 @@ Future<void> runFullSetup() async {
         '{\n  "app_title": "${projectName[0].toUpperCase()}${projectName.substring(1)}"\n}',
     'assets/translations/ar.json':
         '{\n  "app_title": "${projectName[0].toUpperCase()}${projectName.substring(1)}"\n}',
+    'lib/l10n/z_l10n.dart': "export 'locale_keys.g.dart';",
     'lib/icons.dart': getIconsTemplate(),
     'lib/main.dart': getMainTemplate(projectName, stateType),
     'lib/app.dart': getMainAppTemplate(projectName, stateType),
     'lib/core/constants/z_constants.dart': '',
-    'lib/core/api/z_api.dart': '',
-    'lib/core/errors/z_errors.dart': '',
-    'lib/core/network/z_network.dart': '',
-    'lib/core/database/z_database.dart': '',
-    'lib/core/services/z_services.dart': '',
-    'lib/core/shared/z_shared.dart': '',
-    'lib/l10n/z_l10n.dart': '',
-    'lib/injection.dart': '',
     'lib/$projectName.dart':
         "export 'injection.dart';\nexport 'main.dart';\nexport 'app.dart';\nexport 'src/z_src.dart';",
     'lib/src/z_src.dart':
-        "export 'dart.dart';\nexport 'flutter.dart' hide basicLocaleListResolution, timeDilation, State, Path;\nexport 'base.dart';\nexport 'global.dart' hide TextDirection;",
+        "export 'dart.dart';\nexport 'flutter.dart' hide basicLocaleListResolution,  Path;\nexport 'base.dart';\nexport 'global.dart' hide TextDirection, Context;",
     'lib/core/z_core.dart':
-        "export 'constants/z_constants.dart';\nexport 'theme/z_theme.dart';\nexport 'locale/z_locale.dart';\nexport 'database/z_database.dart';\nexport 'api/z_api.dart';\nexport 'errors/z_errors.dart';\nexport 'network/z_network.dart';\nexport 'routes/z_routes.dart';\nexport 'services/z_services.dart';\nexport 'utils/z_utils.dart';",
+        "export 'constants/z_constants.dart';\nexport 'theme/z_theme.dart';\nexport 'locale/z_locale.dart';\nexport 'routes/z_routes.dart';\nexport 'utils/z_utils.dart';",
     'lib/src/dart.dart':
         "export 'dart:async';\nexport 'dart:developer' show log;\nexport 'dart:convert';\nexport 'dart:io' hide HttpResponse;\nexport 'dart:math' hide log;\nexport 'dart:core';",
     'lib/src/flutter.dart':
-        "export 'package:flutter/material.dart';\nexport 'package:flutter/cupertino.dart'  hide RefreshCallback;\nexport 'package:flutter/foundation.dart';\nexport 'package:flutter/widgets.dart';\nexport 'package:flutter/services.dart';\nexport 'package:flutter/rendering.dart';\nexport 'package:flutter/painting.dart';\nexport 'package:flutter/gestures.dart';\nexport 'package:flutter/scheduler.dart';\nexport 'package:flutter/semantics.dart';",
+        "export 'package:flutter/material.dart';\nexport 'package:flutter/cupertino.dart'  hide RefreshCallback;\nexport 'package:flutter/foundation.dart';\nexport 'package:flutter/services.dart';\nexport 'package:flutter/gestures.dart';",
     'lib/src/base.dart':
         "export '../core/z_core.dart';\nexport '../features/z_features.dart';\nexport '../l10n/z_l10n.dart';\nexport '../shared/z_shared.dart';",
     'lib/src/global.dart':
         "// Package dependencies\n${currentDeps.map((e) {
           if (e.contains('drift') || e.contains('colorful_iconify_flutter') || e.contains('iconify_flutter_plus')) return '';
           if (e.contains('retrofit')) return "export 'package:$e/$e.dart' hide Headers,Parser;";
+          if (e.contains('dartz')) return "export 'package:$e/$e.dart' hide State;";
+          if (e.contains('intl')) return "export 'package:$e/$e.dart' hide TextDirection;";
+          if (e.contains('easy_localization')) return "export 'package:$e/$e.dart' hide TextDirection;";
           return "export 'package:$e/$e.dart';";
         }).join('\n')}",
     'analysis_options.yaml': getAnalysisOptionsTemplate(),
@@ -315,6 +304,19 @@ Future<void> runFullSetup() async {
 
   // Final synchronization
   printStep(currentStep++, totalSteps, 'Running project synchronization...');
+  await runCommand('dart', [
+    'run',
+    'easy_localization:generate',
+    '-S',
+    'assets/translations',
+    '-f',
+    'keys',
+    '-o',
+    'locale_keys.g.dart',
+    '-O',
+    'lib/l10n',
+  ], loadingMessage: 'Generating localization keys');
+  printSuccess('Keys generated successfully.');
   await runCommand('flutter', [
     'pub',
     'get',

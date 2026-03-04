@@ -28,6 +28,9 @@ Future<void> setupInjection() async {
   sl.registerLazySingleton<AppInterceptor>(() => AppInterceptor());
   sl.registerLazySingleton<Dio>(() => DioFactory.getDio());
   sl.registerLazySingleton<ApiService>(() => ApiService(sl<Dio>()));
+  
+  // Connectivity
+  sl.registerLazySingleton<Connectivity>(() => Connectivity());
   """ : ""}
 
   // Package Info
@@ -38,8 +41,6 @@ Future<void> setupInjection() async {
   final deviceInfo = DeviceInfoPlugin();
   sl.registerSingleton<DeviceInfoPlugin>(deviceInfo);
 
-  // Connectivity
-  sl.registerLazySingleton<Connectivity>(() => Connectivity());
 
   // --- Features ---
   

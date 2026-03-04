@@ -14,55 +14,71 @@ Future<void> configureDatabase() async {
   });
 
   // 2. Ask for database file path
-  final dbPath = ask(
+  final dbPathRaw = ask(
     'Enter the database file path (e.g., /path/to/my.db) [Leave empty to skip asset copy]',
   );
   String? dbFileName;
 
-  if (dbPath != null && File(dbPath).existsSync()) {
-    dbFileName = p.basename(dbPath);
-    // Copy database file to assets/database/
-    final dbTargetDir = Directory(p.join(activePath, 'assets', 'database'));
-    if (!dbTargetDir.existsSync()) {
-      dbTargetDir.createSync(recursive: true);
+  if (dbPathRaw != null && dbPathRaw.trim().isNotEmpty) {
+    // Clean path (remove quotes if pasted from Windows "Copy as path")
+    final dbPath = dbPathRaw.trim().replaceAll('"', '').replaceAll("'", "");
+    final dbFile = File(dbPath);
+
+    if (dbFile.existsSync()) {
+      dbFileName = p.basename(dbPath);
+      // Copy database file to assets/database/
+      final dbTargetDir = Directory(p.join(activePath, 'assets', 'database'));
+      if (!dbTargetDir.existsSync()) {
+        dbTargetDir.createSync(recursive: true);
+      }
+      dbFile.copySync(p.join(dbTargetDir.path, dbFileName));
+      _updatePubspecWithDatabase(activePath);
+      printInfo('Copied database file to assets/database/$dbFileName');
+    } else {
+      printError('Database file not found at: $dbPath. Skipping asset copy.');
     }
-    File(dbPath).copySync(p.join(dbTargetDir.path, dbFileName));
-    _updatePubspecWithDatabase(activePath);
   }
 
   // 3. Ask for schema file path
-  final schemaPath = ask(
+  final schemaPathRaw = ask(
     'Enter the schema file path (.drift or .sql) [Leave empty for blank table list]',
   );
   String? finalSchemaFileName;
 
-  if (schemaPath != null && File(schemaPath).existsSync()) {
-    final extension = p.extension(schemaPath).toLowerCase();
-    final fileNameWithoutExt = p.basenameWithoutExtension(schemaPath);
+  if (schemaPathRaw != null && schemaPathRaw.trim().isNotEmpty) {
+    // Clean path
+    final schemaPath = schemaPathRaw
+        .trim()
+        .replaceAll('"', '')
+        .replaceAll("'", "");
+    final schemaFile = File(schemaPath);
 
-    final schemaTargetDir = Directory(
-      p.join(activePath, 'lib', 'core', 'database'),
-    );
-    if (!schemaTargetDir.existsSync()) {
-      schemaTargetDir.createSync(recursive: true);
-    }
+    if (schemaFile.existsSync()) {
+      final extension = p.extension(schemaPath).toLowerCase();
+      final fileNameWithoutExt = p.basenameWithoutExtension(schemaPath);
 
-    if (extension == '.sql') {
-      finalSchemaFileName = '$fileNameWithoutExt.drift';
-      File(
-        schemaPath,
-      ).copySync(p.join(schemaTargetDir.path, finalSchemaFileName));
-      printInfo(
-        'Renamed and copied .sql schema to lib/core/database/$finalSchemaFileName',
+      final schemaTargetDir = Directory(
+        p.join(activePath, 'lib', 'core', 'database'),
       );
-    } else if (extension == '.drift') {
-      finalSchemaFileName = p.basename(schemaPath);
-      File(
-        schemaPath,
-      ).copySync(p.join(schemaTargetDir.path, finalSchemaFileName));
-      printInfo(
-        'Copied .drift schema to lib/core/database/$finalSchemaFileName',
-      );
+      if (!schemaTargetDir.existsSync()) {
+        schemaTargetDir.createSync(recursive: true);
+      }
+
+      if (extension == '.sql') {
+        finalSchemaFileName = '$fileNameWithoutExt.drift';
+        schemaFile.copySync(p.join(schemaTargetDir.path, finalSchemaFileName));
+        printInfo(
+          'Renamed and copied .sql schema to lib/core/database/$finalSchemaFileName',
+        );
+      } else if (extension == '.drift') {
+        finalSchemaFileName = p.basename(schemaPath);
+        schemaFile.copySync(p.join(schemaTargetDir.path, finalSchemaFileName));
+        printInfo(
+          'Copied .drift schema to lib/core/database/$finalSchemaFileName',
+        );
+      }
+    } else {
+      printError('Schema file not found at: $schemaPath. Skipping.');
     }
   }
 
@@ -110,12 +126,14 @@ Future<void> configureDatabase() async {
     File(
       p.join(dbToolsDir.path, 'builder.dart'),
     ).writeAsStringSync(getDatabaseToolTemplate());
+
     File(
       p.join(activePath, 'build.yaml'),
     ).writeAsStringSync(getDatabaseBuildYamlTemplate(databaseAppFilePath));
 
     final webDir = Directory(p.join(activePath, 'web'));
     if (!webDir.existsSync()) webDir.createSync(recursive: true);
+
     File(
       p.join(webDir.path, 'worker.dart'),
     ).writeAsStringSync(getDatabaseWorkerTemplate());
@@ -123,6 +141,11 @@ Future<void> configureDatabase() async {
     File(
       p.join(dbDir.path, 'z_database.dart'),
     ).writeAsStringSync("export 'app_database.dart';");
+
+    File(p.join(activePath, 'lib', 'core', 'z_core.dart')).writeAsStringSync(
+      "\nexport 'database/z_database.dart';",
+      mode: FileMode.append,
+    );
   });
 
   // Artifact downloads
@@ -135,21 +158,29 @@ Future<void> configureDatabase() async {
     );
 
     try {
-      final workerRes = await http.get(urlWorker);
-      final wasmRes = await http.get(urlWasm);
-
       final webDir = Directory(p.join(activePath, 'web'));
       if (!webDir.existsSync()) webDir.createSync();
 
-      File(
-        p.join(webDir.path, 'drift_worker.js'),
-      ).writeAsBytesSync(workerRes.bodyBytes);
-      File(
-        p.join(webDir.path, 'sqlite3.wasm'),
-      ).writeAsBytesSync(wasmRes.bodyBytes);
+      final workerFile = File(p.join(webDir.path, 'drift_worker.js'));
+      final wasmFile = File(p.join(webDir.path, 'sqlite3.wasm'));
+
+      if (!workerFile.existsSync()) {
+        final workerRes = await http.get(urlWorker);
+        File(
+          p.join(webDir.path, 'drift_worker.js'),
+        ).writeAsBytesSync(workerRes.bodyBytes);
+      }
+      if (!wasmFile.existsSync()) {
+        final wasmRes = await http.get(urlWasm);
+        File(
+          p.join(webDir.path, 'sqlite3.wasm'),
+        ).writeAsBytesSync(wasmRes.bodyBytes);
+      }
+      await runCommand('dart', ['compile', 'js', '-O4', 'web/worker.dart']);
     } catch (e) {
       printWarning(
-        'Could not download web artifacts (Drift/SQLite). You may need to add them manually for web support.',
+        'Could not download web artifacts (Drift/SQLite). You may need to add them manually for web support.'
+        'error: $e',
       );
     }
   });
@@ -167,10 +198,18 @@ void _updatePubspecWithDatabase(String activePath) {
   if (!content.contains(assetPath)) {
     if (content.contains('  assets:')) {
       content = content.replaceFirst('  assets:', '  assets:\n$assetPath');
-    } else if (content.contains('flutter:')) {
+    } else if (content.contains('uses-material-design: true')) {
       content = content.replaceFirst(
-        'flutter:',
-        'flutter:\n  assets:\n$assetPath',
+        'uses-material-design: true',
+        'uses-material-design: true\n  assets:\n$assetPath',
+      );
+    } else if (content.contains("""
+flutter:""")) {
+      content = content.replaceFirst(
+        """
+flutter:""",
+        """
+flutter:\n  assets:\n$assetPath""",
       );
     }
     file.writeAsStringSync(content);

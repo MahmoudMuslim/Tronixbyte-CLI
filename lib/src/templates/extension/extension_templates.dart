@@ -14,7 +14,5 @@ extension ContextExtensions on BuildContext {
   bool get isDarkMode => theme.brightness == Brightness.dark;
   
   void goBack() => GoRouter.of(this).pop();
-  void push(String location) => GoRouter.of(this).push(location);
-  void replace(String location) => GoRouter.of(this).replace(location);
 }
 """;
