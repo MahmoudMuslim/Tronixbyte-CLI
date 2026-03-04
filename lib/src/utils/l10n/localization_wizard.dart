@@ -32,7 +32,8 @@ Future<void> addLocalizationKey() async {
   printSuccess('Key "$key" added to both en.json and ar.json.');
 
   final runGen =
-      (ask('Run localization generator now? (y/n)') ?? 'y').toLowerCase() ==
+      (ask('Run localization generator now? (y/n)', defaultValue: 'y') ?? 'y')
+          .toLowerCase() ==
       'y';
   if (runGen) {
     // runCommand uses getActiveProjectPath() internally

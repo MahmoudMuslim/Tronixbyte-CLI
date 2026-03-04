@@ -10,7 +10,8 @@ Future<void> windowsBuildWizard(List<String> commonArgs) async {
   final args = [...commonArgs];
   final modeStr =
       ask(
-        'Build mode (debug/release/profile - default: release, "b" to back)',
+        'Build mode (debug/release/profile, "b" to back)',
+        defaultValue: 'release',
       ) ??
       'release';
   if (modeStr.toLowerCase() == 'b') return;
@@ -19,13 +20,15 @@ Future<void> windowsBuildWizard(List<String> commonArgs) async {
 
   if (mode != 'debug') {
     await addObfuscationArgs(args, 'windows');
-    final analyze = (ask('Analyze build size? (y/n)') ?? 'n').toLowerCase();
+    final analyze = (ask('Analyze build size? (y/n)', defaultValue: 'n') ?? 'n')
+        .toLowerCase();
     if (analyze == 'y') {
       args.add('--analyze-size');
     }
   }
 
-  if ((ask('Tree shake icons? (y/n - default: y)') ?? 'y').toLowerCase() ==
+  if ((ask('Tree shake icons? (y/n)', defaultValue: 'y') ?? 'y')
+          .toLowerCase() ==
       'n') {
     args.add('--no-tree-shake-icons');
   }
@@ -49,7 +52,8 @@ Future<void> macosBuildWizard(List<String> commonArgs) async {
   final args = [...commonArgs];
   final modeStr =
       ask(
-        'Build mode (debug/release/profile - default: release, "b" to back)',
+        'Build mode (debug/release/profile, "b" to back)',
+        defaultValue: 'release',
       ) ??
       'release';
   if (modeStr.toLowerCase() == 'b') return;
@@ -60,7 +64,8 @@ Future<void> macosBuildWizard(List<String> commonArgs) async {
     await addObfuscationArgs(args, 'macos');
   }
 
-  if ((ask('Tree shake icons? (y/n - default: y)') ?? 'y').toLowerCase() ==
+  if ((ask('Tree shake icons? (y/n)', defaultValue: 'y') ?? 'y')
+          .toLowerCase() ==
       'n') {
     args.add('--no-tree-shake-icons');
   }
@@ -84,14 +89,16 @@ Future<void> linuxBuildWizard(List<String> commonArgs) async {
   final args = [...commonArgs];
   final modeStr =
       ask(
-        'Build mode (debug/release/profile - default: release, "b" to back)',
+        'Build mode (debug/release/profile, "b" to back)',
+        defaultValue: 'release',
       ) ??
       'release';
   if (modeStr.toLowerCase() == 'b') return;
   final mode = modeStr.toLowerCase();
   args.add('--$mode');
 
-  if ((ask('Tree shake icons? (y/n - default: y)') ?? 'y').toLowerCase() ==
+  if ((ask('Tree shake icons? (y/n)', defaultValue: 'y') ?? 'y')
+          .toLowerCase() ==
       'n') {
     args.add('--no-tree-shake-icons');
   }

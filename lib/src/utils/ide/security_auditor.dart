@@ -136,7 +136,10 @@ Future<void> runSecurityAudit() async {
     if (hardcodedSecrets.isNotEmpty) {
       print('\n$cyan$bold🛠️  SECRET EXTRACTION AVAILABLE:$reset');
       final fix =
-          (ask('Extract ${hardcodedSecrets.length} secrets to .env? (y/n)') ??
+          (ask(
+                    'Extract ${hardcodedSecrets.length} secrets to .env? (y/n)',
+                    defaultValue: 'n',
+                  ) ??
                   'n')
               .toLowerCase() ==
           'y';

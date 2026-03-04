@@ -180,6 +180,7 @@ Future<void> runProductionAudit() async {
       final fixAll =
           (ask(
                     'Would you like to attempt auto-fixing these ${autoFixes.length} issues? (y/n)',
+                    defaultValue: 'n',
                   ) ??
                   'n')
               .toLowerCase() ==

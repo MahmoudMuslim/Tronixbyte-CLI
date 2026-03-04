@@ -40,7 +40,8 @@ Future<void> _androidApkBuildWizard(List<String> commonArgs) async {
   final args = [...commonArgs];
   final modeStr =
       ask(
-        'Build mode (debug/release/profile - default: release, "b" to back)',
+        'Build mode (debug/release/profile, "b" to back)',
+        defaultValue: 'release',
       ) ??
       'release';
   if (modeStr.toLowerCase() == 'b') return;
@@ -49,13 +50,15 @@ Future<void> _androidApkBuildWizard(List<String> commonArgs) async {
 
   if (mode != 'debug') {
     await addObfuscationArgs(args, 'apk');
-    final analyze = (ask('Analyze build size? (y/n)') ?? 'n').toLowerCase();
+    final analyze = (ask('Analyze build size? (y/n)', defaultValue: 'n') ?? 'n')
+        .toLowerCase();
     if (analyze == 'y') {
       args.add('--analyze-size');
     }
   }
 
-  if ((ask('Split per ABI? (y/n)') ?? 'n').toLowerCase() == 'y') {
+  if ((ask('Split per ABI? (y/n)', defaultValue: 'n') ?? 'n').toLowerCase() ==
+      'y') {
     args.add('--split-per-abi');
   }
 
@@ -67,7 +70,8 @@ Future<void> _androidApkBuildWizard(List<String> commonArgs) async {
   );
   if (targetPlatform != null) args.add('--target-platform=$targetPlatform');
 
-  if ((ask('Tree shake icons? (y/n - default: y)') ?? 'y').toLowerCase() ==
+  if ((ask('Tree shake icons? (y/n)', defaultValue: 'y') ?? 'y')
+          .toLowerCase() ==
       'n') {
     args.add('--no-tree-shake-icons');
   }
@@ -85,7 +89,10 @@ Future<void> _androidAabBuildWizard(List<String> commonArgs) async {
   printSection('Android App Bundle Build Wizard');
   final args = [...commonArgs];
   final modeStr =
-      ask('Build mode (release/profile - default: release, "b" to back)') ??
+      ask(
+        'Build mode (release/profile, "b" to back)',
+        defaultValue: 'release',
+      ) ??
       'release';
   if (modeStr.toLowerCase() == 'b') return;
   final mode = modeStr.toLowerCase();
@@ -93,7 +100,9 @@ Future<void> _androidAabBuildWizard(List<String> commonArgs) async {
 
   if (mode != 'debug') {
     await addObfuscationArgs(args, 'appbundle');
-    if ((ask('Analyze build size? (y/n)') ?? 'n').toLowerCase() == 'y') {
+    if ((ask('Analyze build size? (y/n)', defaultValue: 'n') ?? 'n')
+            .toLowerCase() ==
+        'y') {
       args.add('--analyze-size');
     }
   }
@@ -106,13 +115,14 @@ Future<void> _androidAabBuildWizard(List<String> commonArgs) async {
   );
   if (targetPlatform != null) args.add('--target-platform=$targetPlatform');
 
-  if ((ask('Enable deferred components? (y/n - default: y)') ?? 'y')
+  if ((ask('Enable deferred components? (y/n)', defaultValue: 'y') ?? 'y')
           .toLowerCase() !=
       'y') {
     args.add('--no-deferred-components');
   }
 
-  if ((ask('Tree shake icons? (y/n - default: y)') ?? 'y').toLowerCase() ==
+  if ((ask('Tree shake icons? (y/n)', defaultValue: 'y') ?? 'y')
+          .toLowerCase() ==
       'n') {
     args.add('--no-tree-shake-icons');
   }
@@ -129,13 +139,16 @@ Future<void> _androidAabBuildWizard(List<String> commonArgs) async {
 Future<void> _androidAarBuildWizard(List<String> commonArgs) async {
   printSection('Android AAR Build Wizard');
   final args = [...commonArgs];
-  if ((ask('Build debug? (y/n - default: y)') ?? 'y').toLowerCase() == 'n') {
+  if ((ask('Build debug? (y/n)', defaultValue: 'y') ?? 'y').toLowerCase() ==
+      'n') {
     args.add('--no-debug');
   }
-  if ((ask('Build profile? (y/n - default: y)') ?? 'y').toLowerCase() == 'n') {
+  if ((ask('Build profile? (y/n)', defaultValue: 'y') ?? 'y').toLowerCase() ==
+      'n') {
     args.add('--no-profile');
   }
-  if ((ask('Build release? (y/n - default: y)') ?? 'y').toLowerCase() == 'n') {
+  if ((ask('Build release? (y/n)', defaultValue: 'y') ?? 'y').toLowerCase() ==
+      'n') {
     args.add('--no-release');
   }
 
@@ -150,7 +163,8 @@ Future<void> _androidAarBuildWizard(List<String> commonArgs) async {
   final output = ask('Output directory path');
   if (output != null) args.addAll(['--output', output]);
 
-  if ((ask('Tree shake icons? (y/n - default: y)') ?? 'y').toLowerCase() ==
+  if ((ask('Tree shake icons? (y/n)', defaultValue: 'y') ?? 'y')
+          .toLowerCase() ==
       'n') {
     args.add('--no-tree-shake-icons');
   }

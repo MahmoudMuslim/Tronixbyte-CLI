@@ -138,7 +138,10 @@ Future<void> checkArchitecture() async {
       );
 
       final fix =
-          (ask('Would you like to auto-heal these $issues violations? (y/n)') ??
+          (ask(
+                    'Would you like to auto-heal these $issues violations? (y/n)',
+                    defaultValue: 'n',
+                  ) ??
                   'n')
               .toLowerCase() ==
           'y';

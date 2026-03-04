@@ -1,6 +1,6 @@
 import 'package:tools/tools.dart';
 
-String? ask(String prompt, {bool useHistory = true}) {
+String? ask(String prompt, {String? defaultValue, bool useHistory = true}) {
   final category = _identifyCategory(prompt);
   final recentInputs = useHistory
       ? InputHistoryManager.getRecentInputs(category)
@@ -15,8 +15,11 @@ String? ask(String prompt, {bool useHistory = true}) {
     }
     print('');
   }
-
-  stdout.write('   $magenta$bold❓ $prompt$reset: ');
+  final useDefault = defaultValue != null && defaultValue.isNotEmpty;
+  final defaultText = useDefault
+      ? ' [Default: $green($defaultValue)$reset]'
+      : '';
+  stdout.write('   $magenta$bold❓ $prompt$defaultText$reset: ');
   var input = stdin.readLineSync()?.trim();
 
   if (useHistory && input != null && input.isNotEmpty) {

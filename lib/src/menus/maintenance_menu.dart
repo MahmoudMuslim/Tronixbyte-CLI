@@ -245,6 +245,7 @@ Future<void> _runDeepClean() async {
   final confirm =
       (ask(
                 'Run DEEP CLEAN? This will delete all .g.dart files and build artifacts. (y/n)',
+                defaultValue: 'n',
               ) ??
               'n')
           .toLowerCase() ==

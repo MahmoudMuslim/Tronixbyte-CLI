@@ -43,7 +43,9 @@ Future<void> _configureGitHubActions(
   final choices = <int>[];
   for (var i = 0; i < options.length; i++) {
     final enable =
-        (ask('${i + 1}: ${options[i]}? (y/n)') ?? 'n').toLowerCase() == 'y';
+        (ask('${i + 1}: ${options[i]}? (y/n)', defaultValue: 'n') ?? 'n')
+            .toLowerCase() ==
+        'y';
     if (enable) choices.add(i + 1);
   }
 

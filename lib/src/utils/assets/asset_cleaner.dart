@@ -78,7 +78,8 @@ Future<void> findUnusedAssets() async {
     );
 
     final delete =
-        (ask('Do you want to delete them all now? (y/n)') ?? 'n')
+        (ask('Do you want to delete them all now? (y/n)', defaultValue: 'n') ??
+                'n')
             .toLowerCase() ==
         'y';
     if (delete) {

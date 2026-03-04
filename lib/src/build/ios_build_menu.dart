@@ -23,14 +23,16 @@ Future<void> iosBuildWizard(List<String> commonArgs) async {
   iosArgs.add('--$mode');
 
   final codesign =
-      (ask('Codesign? (y/n - default: n)') ?? 'n').toLowerCase() == 'y';
+      (ask('Codesign? (y/n)', defaultValue: 'n') ?? 'n').toLowerCase() == 'y';
   if (!codesign) iosArgs.add('--no-codesign');
 
   final flavor = ask('Flavor/Scheme (leave empty for none)');
   if (flavor != null) iosArgs.add('--flavor=$flavor');
 
   final treeShake =
-      (ask('Tree shake icons? (y/n - default: y)') ?? 'y').toLowerCase() == 'y';
+      (ask('Tree shake icons? (y/n)', defaultValue: 'y') ?? 'y')
+          .toLowerCase() ==
+      'y';
   if (!treeShake) iosArgs.add('--no-tree-shake-icons');
 
   await runCommand('flutter', [

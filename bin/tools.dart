@@ -75,7 +75,11 @@ void main(List<String> args) async {
             break;
           case '3':
             final confirm =
-                (ask('Clear all history and project context? (y/n)') ?? 'n')
+                (ask(
+                          'Clear all history and project context? (y/n)',
+                          defaultValue: 'n',
+                        ) ??
+                        'n')
                     .toLowerCase() ==
                 'y';
             if (confirm) {

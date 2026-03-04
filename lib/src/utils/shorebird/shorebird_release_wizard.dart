@@ -8,7 +8,9 @@ Future<void> shorebirdReleaseWizard(String platform) async {
   final List<String> args = ['release', platform];
 
   final useEnv =
-      (ask('Use .env for dart-defines? (y/n)') ?? 'n').toLowerCase() == 'y';
+      (ask('Use .env for dart-defines? (y/n)', defaultValue: 'n') ?? 'n')
+          .toLowerCase() ==
+      'y';
   if (useEnv) {
     final envType = (ask('Which env file? (dev/stg/prod)') ?? 'dev')
         .toLowerCase();

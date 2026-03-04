@@ -21,11 +21,14 @@ Future<void> webBuildWizard(List<String> commonArgs) async {
   webArgs.add('--$mode');
 
   final useWasm =
-      (ask('Compile to WebAssembly (WASM)? (y/n)') ?? 'n').toLowerCase() == 'y';
+      (ask('Compile to WebAssembly (WASM)? (y/n)', defaultValue: 'n') ?? 'n')
+          .toLowerCase() ==
+      'y';
   if (useWasm) {
     webArgs.add('--wasm');
     final stripWasm =
-        (ask('Strip WASM symbols? (y/n - default: y)') ?? 'y').toLowerCase() ==
+        (ask('Strip WASM symbols? (y/n)', defaultValue: 'y') ?? 'y')
+            .toLowerCase() ==
         'y';
     if (!stripWasm) webArgs.add('--no-strip-wasm');
   }
@@ -33,24 +36,31 @@ Future<void> webBuildWizard(List<String> commonArgs) async {
   final baseHref = ask('Base href (e.g. /my_app/ - must start and end with /)');
   if (baseHref != null) webArgs.add('--base-href=$baseHref');
 
-  final optLevel = ask('Optimization level (0-4 - default: 4)');
+  final optLevel = ask('Optimization level (0-4)', defaultValue: '4');
   if (optLevel != null) webArgs.add('-O$optLevel');
 
   final disableSecurity =
-      (ask('Disable web security? (y/n)') ?? 'n').toLowerCase() == 'y';
+      (ask('Disable web security? (y/n)', defaultValue: 'n') ?? 'n')
+          .toLowerCase() ==
+      'y';
   if (disableSecurity) {
     webArgs.addAll(['--web-browser-flag', '--disable-web-security']);
   }
 
   final treeShake =
-      (ask('Tree shake icons? (y/n - default: y)') ?? 'y').toLowerCase() == 'y';
+      (ask('Tree shake icons? (y/n)', defaultValue: 'y') ?? 'y')
+          .toLowerCase() ==
+      'y';
   if (!treeShake) webArgs.add('--no-tree-shake-icons');
 
   final sourceMaps =
-      (ask('Generate source maps? (y/n)') ?? 'n').toLowerCase() == 'y';
+      (ask('Generate source maps? (y/n)', defaultValue: 'n') ?? 'n')
+          .toLowerCase() ==
+      'y';
   if (sourceMaps) webArgs.add('--source-maps');
 
-  final csp = (ask('Enable CSP? (y/n)') ?? 'n').toLowerCase() == 'y';
+  final csp =
+      (ask('Enable CSP? (y/n)', defaultValue: 'n') ?? 'n').toLowerCase() == 'y';
   if (csp) webArgs.add('--csp');
 
   await runCommand(

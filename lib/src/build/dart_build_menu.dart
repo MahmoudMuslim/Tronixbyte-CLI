@@ -38,7 +38,7 @@ Future<void> dartBuildMenu() async {
         : 'lib/main.dart';
 
     final entryFile =
-        ask('Entry file path (default: $defaultEntry)') ?? defaultEntry;
+        ask('Entry file path', defaultValue: defaultEntry) ?? defaultEntry;
 
     if (!File(p.join(activePath, entryFile)).existsSync()) {
       printError('Entry file not found at ${p.join(activePath, entryFile)}');
@@ -83,7 +83,7 @@ Future<void> dartBuildMenu() async {
 
     final List<String> extraArgs = [];
     if (subcommand == 'js' || subcommand == 'wasm') {
-      final opt = ask('Optimization level (0-4 - default: 4)');
+      final opt = ask('Optimization level (0-4)', defaultValue: '4');
       if (opt != null && opt.isNotEmpty) extraArgs.add('-O$opt');
     }
 

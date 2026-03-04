@@ -22,21 +22,35 @@ Future<void> runFullSetup() async {
 
   printSection('Individual Module Selection');
   final enableNetwork =
-      (ask('Integrate Network & API foundation (Dio/Retrofit)? (y/n)') ?? 'n')
+      (ask(
+                'Integrate Network & API foundation (Dio/Retrofit)? (y/n)',
+                defaultValue: 'n',
+              ) ??
+              'n')
           .toLowerCase() ==
       'y';
   final enableDatabase =
-      (ask('Integrate Local Database (Drift)? (y/n)') ?? 'n').toLowerCase() ==
+      (ask('Integrate Local Database (Drift)? (y/n)', defaultValue: 'n') ?? 'n')
+          .toLowerCase() ==
       'y';
   final enableFirebase =
-      (ask('Integrate Firebase Suite? (y/n)') ?? 'n').toLowerCase() == 'y';
+      (ask('Integrate Firebase Suite? (y/n)', defaultValue: 'n') ?? 'n')
+          .toLowerCase() ==
+      'y';
   final enableAds =
-      (ask('Integrate Ad Services (AdMob)? (y/n)') ?? 'n').toLowerCase() == 'y';
+      (ask('Integrate Ad Services (AdMob)? (y/n)', defaultValue: 'n') ?? 'n')
+          .toLowerCase() ==
+      'y';
   final enableShorebird =
-      (ask('Integrate Shorebird (Code Push)? (y/n)') ?? 'n').toLowerCase() ==
+      (ask('Integrate Shorebird (Code Push)? (y/n)', defaultValue: 'n') ?? 'n')
+          .toLowerCase() ==
       'y';
   final enableBoilerplate =
-      (ask('Generate Shared UI Boilerplate Widgets? (y/n)') ?? 'y')
+      (ask(
+                'Generate Shared UI Boilerplate Widgets? (y/n)',
+                defaultValue: 'y',
+              ) ??
+              'y')
           .toLowerCase() ==
       'y';
 
@@ -255,9 +269,13 @@ Future<void> runFullSetup() async {
     'Generating initial Splash & Home structure...',
   );
   bool needData =
-      (ask('Add Data Layer for Splash? (y/n)') ?? 'n').toLowerCase() == 'y';
+      (ask('Add Data Layer for Splash? (y/n)', defaultValue: 'n') ?? 'n')
+          .toLowerCase() ==
+      'y';
   bool needDomain =
-      (ask('Add Domain Layer for Splash? (y/n)') ?? 'n').toLowerCase() == 'y';
+      (ask('Add Domain Layer for Splash? (y/n)', defaultValue: 'n') ?? 'n')
+          .toLowerCase() ==
+      'y';
   await generateFeature(
     'splash',
     stateType,

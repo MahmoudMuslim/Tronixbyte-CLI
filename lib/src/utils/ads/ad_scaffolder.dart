@@ -18,7 +18,9 @@ Future<void> scaffoldAdIntegration() async {
 
   final List<String> enabledTypes = [];
   adTypes.forEach((key, label) {
-    final enable = (ask('Enable $label? (y/n)') ?? 'n').toLowerCase() == 'y';
+    final enable =
+        (ask('Enable $label? (y/n)', defaultValue: 'n') ?? 'n').toLowerCase() ==
+        'y';
     if (enable) enabledTypes.add(key);
   });
 
@@ -29,10 +31,16 @@ Future<void> scaffoldAdIntegration() async {
 
   print('\n$blue$bold🔑 Production Release Configuration$reset');
   final androidAppId =
-      ask('Enter REAL Android App ID (leave empty for test ID)') ??
+      ask(
+        'Enter REAL Android App ID (leave empty for test ID)',
+        defaultValue: 'ca-app-pub-3940256099942544~3347511713',
+      ) ??
       'ca-app-pub-3940256099942544~3347511713';
   final iosAppId =
-      ask('Enter REAL iOS App ID (leave empty for test ID)') ??
+      ask(
+        'Enter REAL iOS App ID (leave empty for test ID)',
+        defaultValue: 'ca-app-pub-3940256099942544~1458002511',
+      ) ??
       'ca-app-pub-3940256099942544~1458002511';
 
   final Map<String, Map<String, String>> unitIds = {};
