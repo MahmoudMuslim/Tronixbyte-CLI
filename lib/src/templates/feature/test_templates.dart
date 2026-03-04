@@ -71,7 +71,7 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
       
-      final state = container.read(${name}NotifierProvider);
+      final state = container.read(${name}Provider);
       expect(state, isA<${namePascal}State>());
     });
   });

@@ -24,7 +24,9 @@ Future<void> configureThemeAndLocale(
 
       // 1. Generate Theme Logic
       final themeFile = File(p.join(themeDir.path, 'theme_$logicDir.dart'));
-      themeFile.writeAsStringSync(getThemeTemplate(projectName, stateType));
+      themeFile.writeAsStringSync(
+        getThemeTemplate(projectName, stateType, logicDir),
+      );
       printInfo('Generated: ${themeFile.path}');
 
       final themeStateFile = File(p.join(themeDir.path, 'theme_state.dart'));
@@ -47,7 +49,9 @@ Future<void> configureThemeAndLocale(
 
       // 3. Generate Locale Logic
       final localeFile = File(p.join(localeDir.path, 'locale_$logicDir.dart'));
-      localeFile.writeAsStringSync(getLocaleTemplate(projectName, stateType));
+      localeFile.writeAsStringSync(
+        getLocaleTemplate(projectName, stateType, logicDir),
+      );
       printInfo('Generated: ${localeFile.path}');
 
       final localeStateFile = File(p.join(localeDir.path, 'locale_state.dart'));

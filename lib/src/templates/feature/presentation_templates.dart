@@ -78,7 +78,7 @@ String getBodyTemplate(
         """
     Consumer(
       builder: (context, ref, child) {
-        final state = ref.watch(${name}NotifierProvider);
+        final state = ref.watch(${name}Provider);
         return state.when(
           loading: () => const AppShimmer(),
           error: (err, stack) => ErrorView(message: err.toString()),

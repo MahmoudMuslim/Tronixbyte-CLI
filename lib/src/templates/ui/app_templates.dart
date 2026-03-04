@@ -69,7 +69,7 @@ String getMainAppTemplate(String projectName, String stateType) {
             builder: (context, child) {
               child = DevicePreview.appBuilder(context, child);
               Intl.defaultLocale = context.locale.toString();
-              return child!;
+              return child;
             },
           );
         },
@@ -93,7 +93,7 @@ String getMainAppTemplate(String projectName, String stateType) {
       builder: (context, child) {
         child = DevicePreview.appBuilder(context, child);
         Intl.defaultLocale = context.locale.toString();
-        return child!;
+        return child;
       },
     ));""";
       break;
@@ -101,7 +101,7 @@ String getMainAppTemplate(String projectName, String stateType) {
       materialApp = """
     return Consumer(
       builder: (context, ref, child) {
-        final themeMode = ref.watch(themeProvider).state;
+        final themeMode = ref.watch(themeProvider).themeMode;
         return MaterialApp.router(
           title: LocaleKeys.app_title.tr(),
           debugShowCheckedModeBanner: false,
@@ -115,7 +115,7 @@ String getMainAppTemplate(String projectName, String stateType) {
           builder: (context, child) {
             child = DevicePreview.appBuilder(context, child);
             Intl.defaultLocale = context.locale.toString();
-            return child!;
+            return child;
           });
       });""";
       break;
@@ -141,7 +141,7 @@ String getMainAppTemplate(String projectName, String stateType) {
             builder: (context, child) {
               child = DevicePreview.appBuilder(context, child);
               Intl.defaultLocale = context.locale.toString();
-              return child!;
+              return child;
             },
           );
         },
@@ -162,7 +162,7 @@ String getMainAppTemplate(String projectName, String stateType) {
       builder: (context, child) {
         child = DevicePreview.appBuilder(context, child);
         Intl.defaultLocale = context.locale.toString();
-        return child!;
+        return child;
       });""";
   }
 

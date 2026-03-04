@@ -1,24 +1,24 @@
-String getThemeTemplate(String projectName, String type) {
+String getThemeTemplate(String projectName, String type, String logicDir) {
   switch (type) {
     case 'bloc':
     case 'cubit':
-      return _getThemeCubitTemplate(projectName);
+      return _getThemeCubitTemplate(projectName, logicDir);
     case 'getx':
-      return _getThemeGetxTemplate(projectName);
+      return _getThemeGetxTemplate(projectName, logicDir);
     case 'riverpod':
-      return _getThemeRiverpodTemplate(projectName);
+      return _getThemeRiverpodTemplate(projectName, logicDir);
     case 'provider':
-      return _getThemeProviderTemplate(projectName);
+      return _getThemeProviderTemplate(projectName, logicDir);
     default:
       return "";
   }
 }
 
-String _getThemeProviderTemplate(String projectName) =>
+String _getThemeProviderTemplate(String projectName, String logicDir) =>
     """
 import 'package:$projectName/$projectName.dart';
 part 'theme_state.dart';
-part 'theme_state.g.dart';
+part 'theme_$logicDir.g.dart';
 
 class ThemeProvider extends ChangeNotifier {
 final ThemeState _themeState = ThemeState(themeMode: ThemeMode.system);
@@ -30,20 +30,20 @@ void updateThemeMode(ThemeMode themeMode) {
 }
 """;
 
-String _getThemeRiverpodTemplate(String projectName) =>
+String _getThemeRiverpodTemplate(String projectName, String logicDir) =>
     """
 import 'package:$projectName/$projectName.dart';
 part 'theme_state.dart';
-part 'theme_state.g.dart';
+part 'theme_$logicDir.g.dart';
 
 final themeProvider = Provider<ThemeState>((ref) => ThemeState(themeMode: ThemeMode.system));
 """;
 
-String _getThemeGetxTemplate(String projectName) =>
+String _getThemeGetxTemplate(String projectName, String logicDir) =>
     """
 import 'package:$projectName/$projectName.dart';
 part 'theme_state.dart';
-part 'theme_state.g.dart';
+part 'theme_$logicDir.g.dart';
 
 class ThemeController extends GetxController {
 final ThemeState _themeState = ThemeState(themeMode: ThemeMode.system);
@@ -55,11 +55,11 @@ void updateTheme(ThemeMode themeMode) {
 }
 """;
 
-String _getThemeCubitTemplate(String projectName) =>
+String _getThemeCubitTemplate(String projectName, String logicDir) =>
     """
 import 'package:$projectName/$projectName.dart';
 part 'theme_state.dart';
-part 'theme_state.g.dart';
+part 'theme_$logicDir.g.dart';
 
 class ThemeCubit extends HydratedCubit<ThemeState> {
 ThemeCubit() : super(const ThemeState(themeMode: ThemeMode.system));
@@ -74,27 +74,27 @@ Map<String, dynamic>? toJson(ThemeState state) => state.toJson();
 }
 """;
 
-String getLocaleTemplate(String projectName, String type) {
+String getLocaleTemplate(String projectName, String type, String logicDir) {
   switch (type) {
     case 'bloc':
     case 'cubit':
-      return _getLocaleCubitTemplate(projectName);
+      return _getLocaleCubitTemplate(projectName, logicDir);
     case 'getx':
-      return _getLocaleGetxTemplate(projectName);
+      return _getLocaleGetxTemplate(projectName, logicDir);
     case 'riverpod':
-      return _getLocaleRiverpodTemplate(projectName);
+      return _getLocaleRiverpodTemplate(projectName, logicDir);
     case 'provider':
-      return _getLocaleProviderTemplate(projectName);
+      return _getLocaleProviderTemplate(projectName, logicDir);
     default:
       return "";
   }
 }
 
-String _getLocaleProviderTemplate(String projectName) =>
+String _getLocaleProviderTemplate(String projectName, String logicDir) =>
     """
 import 'package:$projectName/$projectName.dart';
 part 'locale_state.dart';
-part 'locale_state.g.dart';
+part 'locale_$logicDir.g.dart';
 
 class LocaleProvider extends ChangeNotifier {
 final LocaleState _localeState = LocaleState(locale: Locale('en'));
@@ -106,19 +106,19 @@ final LocaleState _localeState = LocaleState(locale: Locale('en'));
 }
 """;
 
-String _getLocaleRiverpodTemplate(String projectName) =>
+String _getLocaleRiverpodTemplate(String projectName, String logicDir) =>
     """
 import 'package:$projectName/$projectName.dart';
 part 'locale_state.dart';
-part 'locale_state.g.dart';
-final themeProvider = Provider<ThemeState>((ref) => ThemeState(themeMode: ThemeMode.system));
+part 'locale_$logicDir.g.dart';
+final localeProvider = Provider<LocaleState>((ref) => LocaleState(locale: Locale('en')));
 """;
 
-String _getLocaleGetxTemplate(String projectName) =>
+String _getLocaleGetxTemplate(String projectName, String logicDir) =>
     """
 import 'package:$projectName/$projectName.dart';
 part 'locale_state.dart';
-part 'locale_state.g.dart';
+part 'locale_$logicDir.g.dart';
 
 class LocaleController extends GetxController {
   final LocaleState _localeState = LocaleState(locale: Locale('en'));
@@ -130,12 +130,12 @@ class LocaleController extends GetxController {
 }
 """;
 
-String _getLocaleCubitTemplate(String projectName) =>
+String _getLocaleCubitTemplate(String projectName, String logicDir) =>
     """
 import 'package:$projectName/$projectName.dart';
 
 part 'locale_state.dart';
-part 'locale_state.g.dart';
+part 'locale_$logicDir.g.dart';
 
 class LocaleCubit extends HydratedCubit<LocaleState> {
   LocaleCubit() : super(const LocaleState(locale: Locale('en')));
@@ -164,7 +164,7 @@ ${stateType == 'getx' ? """
   ThemeMode get themeMode => _themeMode.value;
   set themeMode(ThemeMode value) => _themeMode.value = value;
   """ : """
-  final ThemeMode themeMode = ThemeMode.system;
+  final ThemeMode themeMode;
   const ThemeState({required this.themeMode});
   """}
 
@@ -188,6 +188,7 @@ ${stateType == 'getx' ? """
   Locale get locale => _locale.value;
   set locale(Locale value) => _locale.value = value;
   """ : """
+  @LocaleConverter()
   final Locale locale;
   const LocaleState({required this.locale});
   """}
@@ -196,5 +197,18 @@ ${stateType == 'getx' ? """
 
   factory LocaleState.fromJson(Map<String, dynamic> json) => _\$LocaleStateFromJson(json);
   Map<String, dynamic> toJson() => _\$LocaleStateToJson(this);
+}
+
+class LocaleConverter implements JsonConverter<Locale, String> {
+  const LocaleConverter();
+
+  @override
+  Locale fromJson(String json) {
+    final parts = json.split('_');
+    return Locale(parts[0], parts.length > 1 ? parts[1] : null);
+  }
+
+  @override
+  String toJson(Locale object) => object.toString();
 }
 """;
