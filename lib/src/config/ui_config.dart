@@ -22,7 +22,7 @@ Future<void> configureUi(String projectName, String stateType) async {
         p.join(utilsDir.path, 'context_extensions.dart'),
       );
       contextExtensionsFile.writeAsStringSync(
-        getContextExtensionsTemplate(projectName),
+        getContextExtensionsTemplate(projectName, stateType),
       );
       printInfo('Generated: ${contextExtensionsFile.path}');
       if (requiredBO) {

@@ -11,27 +11,27 @@ class AppErrorBoundary extends StatefulWidget {
 }
 
 class _AppErrorBoundaryState extends State<AppErrorBoundary> {
-  bool _hasError = false;
-  String _errorMessage = '';
+  FlutterErrorDetails? _errorDetails;
 
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void componentDidCatch(Object error, StackTrace stackTrace) {
-    setState(() {
-      _hasError = true;
-      _errorMessage = error.toString();
-    });
-    // Log to console or external service
-    debugPrint('🚨 UI Error Caught: \$error');
+    // This is a global override. For a more scoped version,
+    // you might need a more complex implementation.
+    final originalBuilder = ErrorWidget.builder;
+    ErrorWidget.builder = (FlutterErrorDetails details) {
+      if (mounted) {
+        setState(() {
+          _errorDetails = details;
+        });
+      }
+      return originalBuilder(details);
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_hasError) {
+    if (_errorDetails != null) {
       return Scaffold(
         body: Center(
           child: Padding(
@@ -41,12 +41,23 @@ class _AppErrorBoundaryState extends State<AppErrorBoundary> {
               children: [
                 const Icon(Icons.error_outline, color: Colors.red, size: 64),
                 const SizedBox(height: 16),
-                Text('Something went wrong', style: Theme.of(context).textTheme.headlineSmall),
+                Text(
+                  'Something went wrong',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
                 const SizedBox(height: 8),
-                Text(_errorMessage, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+                Text(
+                  _errorDetails!.exceptionAsString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.grey),
+                ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: () => setState(() => _hasError = false),
+                  onPressed: () {
+                    setState(() {
+                      _errorDetails = null;
+                    });
+                  },
                   child: const Text('Try Again'),
                 ),
               ],
@@ -55,7 +66,24 @@ class _AppErrorBoundaryState extends State<AppErrorBoundary> {
         ),
       );
     }
+
     return widget.child;
+  }
+}
+
+class GlobalErrorBoundary extends StatelessWidget {
+  final Widget child;
+  final String message;
+
+  const GlobalErrorBoundary({
+    super.key,
+    required this.child,
+    this.message = 'An error occurred',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ErrorWidget(message);
   }
 }
 """;
@@ -185,11 +213,11 @@ class LandingPage extends StatelessWidget {
   Widget _buildFooter(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 40),
-      color: context.colorScheme.surfaceVariant,
+      color: context.colorScheme.surfaceContainerHighest,
       width: double.infinity,
       child: Column(
         children: [
-          Text('© 2025 $projectName. All rights reserved.'),
+          Text('© \${DateTime.now().year} $projectName. All rights reserved.'),
           const SizedBox(height: 8),
           Text('Powered by Tronixbyte CLI', style: context.textTheme.bodySmall),
         ],
@@ -383,7 +411,7 @@ class AppTextField extends StatelessWidget {
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: context.isDarkMode ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+            fillColor: context.isDarkMode ? Colors.white.withValues(alpha: 0.05) : Colors.grey[100],
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -432,7 +460,7 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: elevation,
-      color: color ?? (context.isDarkMode ? Colors.white.withOpacity(0.05) : Colors.white),
+      color: color ?? (context.isDarkMode ? Colors.white.withValues(alpha: 0.05) : Colors.white),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadius ?? 16),
       ),
@@ -498,7 +526,7 @@ class AppDivider extends StatelessWidget {
     return Divider(
       height: height ?? 1,
       thickness: thickness ?? 1,
-      color: color ?? (context.isDarkMode ? Colors.white.withOpacity(0.1) : Colors.grey[200]));
+      color: color ?? (context.isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.grey[200]));
   }
 }
 """;

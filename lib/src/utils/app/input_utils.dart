@@ -17,7 +17,7 @@ String? ask(String prompt, {String? defaultValue, bool useHistory = true}) {
   }
   final useDefault = defaultValue != null && defaultValue.isNotEmpty;
   final defaultText = useDefault
-      ? ' [Default: $green($defaultValue)$reset]'
+      ? ' [Default: $green($defaultValue)$magenta]'
       : '';
   stdout.write('   $magenta$bold❓ $prompt$defaultText$reset: ');
   var input = stdin.readLineSync()?.trim();

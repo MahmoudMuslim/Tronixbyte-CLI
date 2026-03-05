@@ -162,11 +162,12 @@ Future<void> runFullSetup() async {
         "export '../core/z_core.dart';\nexport '../features/z_features.dart';\nexport '../l10n/z_l10n.dart';\nexport '../shared/z_shared.dart';",
     'lib/src/global.dart':
         "// Package dependencies\n${currentDeps.map((e) {
-          if (e.contains('drift') || e.contains('colorful_iconify_flutter') || e.contains('iconify_flutter_plus')) return '';
-          if (e.contains('retrofit')) return "export 'package:$e/$e.dart' hide Headers,Parser;";
-          if (e.contains('dartz')) return "export 'package:$e/$e.dart' hide State;";
-          if (e.contains('intl')) return "export 'package:$e/$e.dart' hide TextDirection;";
-          if (e.contains('easy_localization')) return "export 'package:$e/$e.dart' hide TextDirection;";
+          if (e == 'drift' || e == 'colorful_iconify_flutter' || e == 'iconify_flutter_plus') return '';
+          if (e == 'retrofit') return "export 'package:$e/$e.dart' hide Headers,Parser;";
+          if (e == 'dartz') return "export 'package:$e/$e.dart' hide State;";
+          if (e == 'intl') return "export 'package:$e/$e.dart' hide TextDirection;";
+          if (e == 'easy_localization') return "export 'package:$e/$e.dart' hide TextDirection, MapExtension;";
+          if (e == 'get') return "export 'package:$e/$e.dart' hide Trans, IterableExtensions, HeaderValue;";
           return "export 'package:$e/$e.dart';";
         }).join('\n')}",
     'analysis_options.yaml': getAnalysisOptionsTemplate(),
@@ -319,6 +320,7 @@ Future<void> runFullSetup() async {
     'build',
     '--delete-conflicting-outputs',
   ], loadingMessage: 'Generating code');
+  await runCommand('dart', ['format', '.'], loadingMessage: 'Formatting code');
 
   printSuccess('Elite project initialization complete in $activePath!');
 }

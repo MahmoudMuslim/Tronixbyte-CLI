@@ -30,7 +30,9 @@ Future<void> configureThemeAndLocale(
       printInfo('Generated: ${themeFile.path}');
 
       final themeStateFile = File(p.join(themeDir.path, 'theme_state.dart'));
-      themeStateFile.writeAsStringSync(getThemeStateTemplate(stateType));
+      themeStateFile.writeAsStringSync(
+        getThemeStateTemplate(stateType, logicDir),
+      );
       printInfo('Generated: ${themeStateFile.path}');
 
       // 2. Generate App Theme (Static styles)
@@ -55,7 +57,9 @@ Future<void> configureThemeAndLocale(
       printInfo('Generated: ${localeFile.path}');
 
       final localeStateFile = File(p.join(localeDir.path, 'locale_state.dart'));
-      localeStateFile.writeAsStringSync(getLocaleStateTemplate(stateType));
+      localeStateFile.writeAsStringSync(
+        getLocaleStateTemplate(stateType, logicDir),
+      );
 
       printInfo('Generated: ${localeStateFile.path}');
 

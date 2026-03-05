@@ -5,7 +5,7 @@ String getScreenTemplate(
   String type,
 ) {
   String logicWrap = "";
-  String bodyContent = "const ${namePascal}Body()";
+  String bodyContent = "${namePascal}Body()";
 
   if (type == 'bloc' || type == 'cubit') {
     logicWrap =

@@ -21,12 +21,14 @@ part 'theme_state.dart';
 part 'theme_$logicDir.g.dart';
 
 class ThemeProvider extends ChangeNotifier {
-final ThemeState _themeState = ThemeState(themeMode: ThemeMode.system);
+  ThemeState _state = const ThemeState(themeMode: ThemeMode.system);
 
-void updateThemeMode(ThemeMode themeMode) {
-  _themeState.themeMode = themeMode;
-  notifyListeners();
-}
+  ThemeState get state => _state;
+
+  void updateTheme(ThemeMode themeMode) {
+    _state = _state.copyWith(themeMode: themeMode);
+    notifyListeners();
+  }
 }
 """;
 
@@ -46,10 +48,10 @@ part 'theme_state.dart';
 part 'theme_$logicDir.g.dart';
 
 class ThemeController extends GetxController {
-final ThemeState _themeState = ThemeState(themeMode: ThemeMode.system);
+final ThemeState state = ThemeState(themeMode: ThemeMode.system);
 
 void updateTheme(ThemeMode themeMode) {
-  _themeState.themeMode = themeMode;
+  state.themeMode = themeMode;
   Get.changeThemeMode(themeMode);
 }
 }
@@ -97,11 +99,14 @@ part 'locale_state.dart';
 part 'locale_$logicDir.g.dart';
 
 class LocaleProvider extends ChangeNotifier {
-final LocaleState _localeState = LocaleState(locale: Locale('en'));
+  LocaleState _state = const LocaleState(locale: Locale('en'));
 
-  void updateLocale(Locale locale,BuildContext context) {
-    _localeState.locale = locale;
+  LocaleState get state => _state;
+
+  void updateLocale(Locale locale, BuildContext context) {
+    _state = _state.copyWith(locale: locale);
     EasyLocalization.of(context)?.setLocale(locale);
+    notifyListeners();
   }
 }
 """;
@@ -121,10 +126,10 @@ part 'locale_state.dart';
 part 'locale_$logicDir.g.dart';
 
 class LocaleController extends GetxController {
-  final LocaleState _localeState = LocaleState(locale: Locale('en'));
+  final LocaleState state = LocaleState(locale: Locale('en'));
 
   void updateLocale(Locale locale,BuildContext context) {
-    _localeState.locale = locale;
+    state.locale = locale;
     EasyLocalization.of(context)?.setLocale(locale);
   }
 }
@@ -150,16 +155,18 @@ class LocaleCubit extends HydratedCubit<LocaleState> {
 }
 """;
 
-String getThemeStateTemplate(String stateType) =>
+String getThemeStateTemplate(String stateType, String logicDir) =>
     """
-part of 'theme_$stateType.dart';
+part of 'theme_$logicDir.dart';
 
 @JsonSerializable()
 @generateProps
 class ThemeState extends Equatable {
 ${stateType == 'getx' ? """
+  @JsonKey(includeFromJson: false, includeToJson: false)
   final Rx<ThemeMode> _themeMode;
-  const ThemeState({required ThemeMode themeMode}):this._themeMode = themeMode.obs;
+  ThemeState({required ThemeMode themeMode})
+    : _themeMode = Rx<ThemeMode>(themeMode);
   
   ThemeMode get themeMode => _themeMode.value;
   set themeMode(ThemeMode value) => _themeMode.value = value;
@@ -167,24 +174,32 @@ ${stateType == 'getx' ? """
   final ThemeMode themeMode;
   const ThemeState({required this.themeMode});
   """}
-
+  
+  @override
   List<Object?> get props => _\$props;
 
   factory ThemeState.fromJson(Map<String, dynamic> json) => _\$ThemeStateFromJson(json);
   Map<String, dynamic> toJson() => _\$ThemeStateToJson(this);
+  
+  ThemeState copyWith({ThemeMode? themeMode}) {
+    return ThemeState(themeMode: themeMode ?? this.themeMode);
+  }
 }
 """;
-String getLocaleStateTemplate(String stateType) =>
+String getLocaleStateTemplate(String stateType, String logicDir) =>
     """
-part of 'locale_$stateType.dart';
+part of 'locale_$logicDir.dart';
 
 @JsonSerializable()
 @generateProps
 class LocaleState extends Equatable {
 ${stateType == 'getx' ? """
+  @JsonKey(includeFromJson: false, includeToJson: false)
   final Rx<Locale> _locale;
-  const LocaleState({required Locale locale}):this._locale = locale.obs;
+  LocaleState({@LocaleConverter() required Locale locale})
+    : _locale = Rx<Locale>(locale);
   
+  @LocaleConverter()
   Locale get locale => _locale.value;
   set locale(Locale value) => _locale.value = value;
   """ : """
@@ -192,11 +207,16 @@ ${stateType == 'getx' ? """
   final Locale locale;
   const LocaleState({required this.locale});
   """}
-
+  
+  @override
   List<Object?> get props => _\$props;
 
   factory LocaleState.fromJson(Map<String, dynamic> json) => _\$LocaleStateFromJson(json);
   Map<String, dynamic> toJson() => _\$LocaleStateToJson(this);
+  
+  LocaleState copyWith({Locale? locale}) {
+    return LocaleState(locale: locale ?? this.locale);
+  }
 }
 
 class LocaleConverter implements JsonConverter<Locale, String> {
